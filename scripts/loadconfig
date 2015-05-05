@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+'''usage: loadconfig [-h] [-v] [-C CONF] [-E STR] [args [args ...]]
+
+loadconfig 0.2.6 generates envvars from multiple sources.
+
+positional arguments:
+  args                  arguments for configuration
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --version         show program's version number and exit
+  -C CONF, --conf CONF  Configuration file in yaml format to load
+  -E STR, --str STR     yaml config string "key: value, .."
+
+Make a list of envvars from config file, yaml strings and cli args.
+Keywords:
+    check_config: python code for config key validation.
+    clg: Specify command line interpretation.
+As convention, keys are lowercase with underscore as space.
+Full documentation:
+    web:  https://loadconfig.readthedocs.org
+    pdf:  https://readthedocs.org/projects/loadconfig/downloads
+'''
+
+from loadconfig import Config, set_verprog, __version__
+import sys
+
+conf = """\
+    clg:
+        description: $prog $version generates envvars from multiple sources.
+        epilog: |
+            Make a list of envvars from config file, yaml strings and cli args.
+            Keywords:
+                check_config: python code for config key validation.
+                clg: Specify command line interpretation.
+            As convention, keys are lowercase with underscore as space.
+            Full documentation:
+                web:  https://loadconfig.readthedocs.org
+                pdf:  https://readthedocs.org/projects/loadconfig/downloads
+        options:
+            version:
+                short: v
+                action: version
+                version: $prog $version
+            conf:
+                short: C
+                default: __SUPPRESS__
+                help: Configuration file in yaml format to load
+            str:
+                short: E
+                default: __SUPPRESS__
+                help: 'yaml config string "key: value, .."'
+        args:
+            args:
+                nargs: '*'
+                default: __SUPPRESS__
+                help: arguments for configuration"""
+
+
+def main(args):
+    config = set_verprog(conf, __version__)
+    c = Config(config, args)
+    print(c.export())
+
+if __name__ == '__main__':
+    main(sys.argv)

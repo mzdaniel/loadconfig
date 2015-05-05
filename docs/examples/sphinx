@@ -1,0 +1,46 @@
+#!/bin/bash
+
+CONF=$(cat << 'EOF'
+    version: 0.1
+    desktop_args: -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix
+    docker_args: -d -u admin -v $(realpath $sphinx_dir):/data/sphinx \
+        $DESKTOP_ARGS reg.csl/sphinx
+    clg:
+        prog: $prog
+        description: $prog $version is a documentation server.
+        epilog: |
+            Build sphinx docs, launch a browser for easy reading,
+            detect and render doc changes with inotify.
+        options:
+            version:
+                short: v
+                action: version
+                version: $prog $version
+            debug:
+                short: d
+                action: store_true
+                default: __SUPPRESS__
+                help: show docker call
+        args:
+            sphinx_dir:
+                nargs: '?'
+                default: /data/rst
+                help: |
+                    directory holding sphinx conf.py and doc sources
+                    (default: %(default)s)
+    check_config: |
+        import os, sys
+        if not os.path.isfile('$sphinx_dir/conf.py'):
+            sys.exit('Error: $sphinx_dir/conf.py not found.')
+EOF
+)
+
+set -e
+ENV=$(loadconfig -E="prog: $(basename $0)" -E="$CONF" "$@")
+eval "$ENV"
+
+[ $DEBUG ] && echo "docker run $DOCKER_ARGS"
+
+cid=$(docker run $DOCKER_ARGS)
+docker wait $cid
+docker rm $cid >/dev/null

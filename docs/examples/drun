@@ -1,0 +1,79 @@
+#!/bin/bash
+# usage: drun [-h] [--version] [-t] [-e] [-v] [-a DARGS]
+#             [image] [args [args ...]]
+#
+# drun 0.1 run docker images
+#
+# positional arguments:
+#   image                 image to run. reg.gdl is assumed. (default=debian)
+#   args                  arguments for docker $image.
+#
+# optional arguments:
+#   -h, --help            show this help message and exit
+#   --version             show program's version number and exit
+#   -t, --test            test image with /data/salt/docker/$image/config:/config volume
+#   -e, --entrypoint      use /bin/bash as entrypoint
+#   -v, --volume          use volume "$PWD:/host"
+#   -a DARGS, --dargs DARGS
+#                         arguments for docker (eg: -p 2222:22)
+
+
+CONF=$(cat << 'EOF'
+    version: 0.1
+    dsalt_path: /data/salt/docker
+    docker__domain: reg.gdl
+
+    clg:
+        prog: $prog
+        description: $prog $version run docker images
+        options:
+            version:
+                action: version
+                version: $prog $version
+            test:
+                short: t
+                action: store_true
+                default: __SUPPRESS__
+                help: test image with $dsalt_path/$image/config:/config volume
+            entrypoint:
+                short: e
+                action: store_true
+                default: __SUPPRESS__
+                help: use /bin/bash as entrypoint
+            volume:
+                short: v
+                action: store_true
+                default: __SUPPRESS__
+                help: use volume "$PWD:/host"
+            dargs:
+                short: a
+                default: __SUPPRESS__
+                help: "arguments for docker (eg: -p 2222:22)"
+        args:
+            image:
+                nargs: '?'
+                default: 'debian'
+                help: image to run. reg.gdl is assumed. (default=%(default)s)
+            args:
+                nargs: '*'
+                help: arguments for docker $image.
+EOF
+)
+
+set -e
+ENV=`loadconfig -E="prog: $(basename $0)" -E="$CONF" "$@"`
+eval "$ENV"
+
+CNAME=${IMAGE%:*}  # Container name. Remove version tag from image
+CNAME=${CNAME#*/}  # Remove domain from image
+if [ "$TEST" ]; then
+    VOLUMES="-v $DSALT_PATH/${IMAGE}/config:/config"; fi
+if [ "$VOLUME" ]; then
+    VOLUMES+="-v $PWD:/host"; fi
+if [ "$ENTRYPOINT" ]; then
+    ENTRYPOINT="--entrypoint=/bin/bash"; fi
+if [ "$IMAGE" == "${IMAGE#*/}" ]; then  # image argument without domain
+    IMAGE="$DOCKER__DOMAIN/$IMAGE"; fi
+
+docker rm $CNAME >/dev/null 2>&1 || true
+docker run -it --name=$CNAME $VOLUMES $DARGS $ENTRYPOINT $IMAGE $ARGS
