@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+0.0.6
+-----
+
+* Add attribute setting and deletion with tests
+
 0.0.5
 -----
 

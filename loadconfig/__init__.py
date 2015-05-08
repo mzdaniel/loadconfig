@@ -70,11 +70,38 @@ class Odict(OrderedDict):
             del self['_']
 
     def __getattr__(self, name):
-        '''Access Odict keys as attributes'''
+        '''Access Odict key as attribute
+
+        >>> c = Config('activity: [hike, bike, scuba dive, run]')
+        >>> c.activity
+        ['hike', 'bike', 'scuba dive', 'run']
+        '''
         if name in self:
             return self[name]
         if name in ['_OrderedDict__root', '__deepcopy__']:
             return super(Odict, self).__getattr__(name)
+
+    def __delattr__(self, name):
+        '''Delete Odict key from attribute
+        >>> c = Config('activity: [hike, bike, scuba dive, run]')
+        >>> del c.activity
+        >>> c
+        {}
+        '''
+        del self[name]
+
+    def __setattr__(self, name, value):
+        '''Set Odict key from attribute
+
+        >>> c = Config('activity: [hike, scuba dive]')
+        >>> c.place = 'Hawaii'
+        >>> c
+        {activity: [hike, scuba dive], place: Hawaii}
+        '''
+        if name in ['_OrderedDict__root', '_OrderedDict__hardroot',
+         '_OrderedDict__map']:
+            return super(Odict, self).__setattr__(name, value)
+        self[name] = value
 
     def __str__(self):
         return self.dump(False)
