@@ -1,10 +1,14 @@
 """documentation config"""
 
 from os.path import dirname, abspath
-import sphinx_bootstrap_theme
 import sys
 sys.path.insert(0, '{}'.format(dirname(dirname(abspath(__file__)))))
-__version__ = '0.1'
+__version__ = '0.0.7'
+
+try:
+    import sphinx_bootstrap_theme
+except ImportError as e:
+    pass
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -25,17 +29,24 @@ release = __version__
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
-extensions = ['sphinx.ext.doctest', 'rst2pdf.pdfbuilder']
+extensions = ['sphinx.ext.doctest']
+
+try:
+    import rst2pd  # noqa
+    extensions += ['rst2pdf.pdfbuilder']
+except ImportError as e:
+    pass
 
 pdf_documents = [('index', 'loadconfig', 'loadconfig docs',
     'Daniel Mizyrycki')]
 
-# The theme to use for HTML and HTML Help pages.
-html_theme = 'bootstrap'
-html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
-html_theme_options = {
-    'globaltoc_depth': 3,
-    'bootswatch_theme': "flatly"}
+# Use bootstrap theme if available. Assumed readthedocs otherwise
+if 'sphinx_bootstrap_theme' in locals():
+    html_theme = 'bootstrap'
+    html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
+    html_theme_options = {
+        'globaltoc_depth': 3,
+        'bootswatch_theme': "flatly"}
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'documentation'
