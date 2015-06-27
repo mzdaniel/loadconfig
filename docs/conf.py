@@ -2,8 +2,13 @@
 
 from os.path import dirname, abspath
 import sys
-sys.path.insert(0, '{}'.format(dirname(dirname(abspath(__file__)))))
-__version__ = '0.0.7'
+ROOT_PATH = dirname(dirname(abspath(__file__)))
+sys.path.insert(0, '{}'.format(ROOT_PATH))
+from six.moves.configparser import ConfigParser
+
+c = ConfigParser()
+c.read('{}/setup.cfg'.format(ROOT_PATH))
+__version__ = c.get('metadata', 'version')
 
 try:
     import sphinx_bootstrap_theme
