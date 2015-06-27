@@ -4,6 +4,7 @@ CHANGES
 0.0.8
 -----
 
+* release 0.0.8
 * Add yaml !env environment variables to config
 * Significantly improve testing and debugging with pytest. Refactor and add new tests using pytest. Add new odict tests. Make key expansion more robust. Expand $ keys within -C arguments. Flatten lists on config export. Multiple library improvements
 
