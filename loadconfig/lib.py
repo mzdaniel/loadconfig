@@ -4,17 +4,18 @@ tox is recommented for testing this file.
 For partial manual run:
     python -m doctest lib.py -v
 '''
-__all__ = ['addpath', 'assertequal', 'capture_stream', 'delregex', 'dfl',
-    'exc', 'findregex', 'import_file', 'read_config_file', 'ppath', 'run',
+__all__ = ['addpath', 'capture_stream', 'delregex', 'dfl', 'exc', 'findregex',
+    'import_file', 'read_config_file', 'ppath', 'run',
     'set_verprog', 'tempdir', 'tempfile']
 __author__ = 'Daniel Mizyrycki'
 
 import argparse
 import clg
 from contextlib import contextmanager
-from pip import get_installed_distributions
-from os.path import basename, dirname, abspath, exists, isdir, isfile
 import os
+from os import remove
+from os.path import basename, dirname, abspath, exists, isdir, isfile
+from pip import get_installed_distributions
 import re
 from shutil import rmtree
 from six.moves import cStringIO
@@ -29,12 +30,14 @@ def addpath(path, parent=False):
     '''Add path to syspath (or path dirname if it is a file)
 
     >>> addpath('/var')
+    '/var'
     >>> '/var' == sys.path[0]
     True
-    >>> addpath(__file__)
-    >>> abspath(dirname(__file__)) == sys.path[0]
+    >>> ret = addpath(__file__)
+    >>> ret == abspath(dirname(__file__)) == sys.path[0]
     True
     >>> addpath('/tmp', parent=True)
+    '/'
     >>> '/tmp' == sys.path[0]
     False
     >>> '/' == sys.path[0]
@@ -43,29 +46,20 @@ def addpath(path, parent=False):
     def _addpath(path):
         if isdir(path):
             sys.path.insert(0, path)
+            return path
         else:
             sys.path.insert(0, dirname(path))
+            return dirname(path)
 
     path = abspath(path)
     assert exists(path), 'path {} does not exist.'.format(path)
     if parent:
         if isfile(path):
             path = dirname(path)
-        _addpath(dirname(path))
+        path = _addpath(dirname(path))
     else:
-        _addpath(path)
-
-
-def assertequal(a, b, msg=''):
-    '''Assert 2 values are equal
-
-    >>> assertequal('seagull', 'dolphin', 'Different animals')
-    Traceback (most recent call last):
-        ...
-    AssertionError: Different animals 'seagull' != 'dolphin'
-    '''
-    if a != b:
-        raise AssertionError("{} '{}' != '{}'".format(msg, a, b))
+        path = _addpath(path)
+    return path
 
 
 @contextmanager
@@ -108,16 +102,34 @@ def dfl(value, dfl=''):
 
 
 @contextmanager
-def exc(exception):
+def exc(exception=BaseException):
     '''Swallow exceptions
 
-    >>> with exc(ZeroDivisionError):
+    >>> with exc(ZeroDivisionError) as e:
     ...     0/0
+    >>> isinstance(e(), ZeroDivisionError)
+    True
     '''
     try:
-        yield
-    except exception:
-        pass
+        e = None
+        yield lambda: e
+    except BaseException as ex:
+        e = ex
+
+
+def flatten(l):
+    '''Flatten a list
+
+    >>> flatten([[1, 2], 3, 4])
+    [1, 2, 3, 4]
+    '''
+    ret = []
+    for e in l:
+        if isinstance(e, (list, tuple)):
+            ret += flatten(e)
+        else:
+            ret.append(e)
+    return ret
 
 
 def findregex(regex, args):
@@ -145,15 +157,6 @@ def import_file(filepath):
     return module
 
 
-def read_config_file(config_path):
-    if isdir(config_path):
-        config_path = '{}/config.conf'.format(config_path)
-    if not(isfile(config_path)):
-        raise Exception("Config file '{}' not found".format(config_path))
-    with open(config_path) as fh:
-        return str(fh.read())
-
-
 def ppath(path):
     '''Get absolute parent path.
     >>> os.chdir('/var/tmp')
@@ -161,6 +164,18 @@ def ppath(path):
     '/var/tmp'
     '''
     return dirname(abspath(path))
+
+
+def read_file(file_path):
+    with exc(IOError), open(file_path) as fh:
+        return str(fh.read())
+    return ''
+
+
+def read_config_file(config_path):
+    if isdir(config_path):
+        config_path = '{}/config.conf'.format(config_path)
+    return(read_file(config_path))
 
 
 def run(cmd, **kwargs):
@@ -175,7 +190,9 @@ def run(cmd, **kwargs):
     class ret(object):  # define a return object
         pass
     kwargs['universal_newlines'] = kwargs.get('universal_newlines', True)
-    p = Popen(['/bin/bash', '-c', cmd], stdout=PIPE, stderr=PIPE, **kwargs)
+    kwargs['stdout'] = kwargs.get('stdout', PIPE)
+    kwargs['stderr'] = kwargs.get('stderr', PIPE)
+    p = Popen(['/bin/bash', '-c', cmd], **kwargs)
     ret.stdout, ret.stderr = p.communicate()
     ret.code = p.returncode
     return ret
@@ -196,9 +213,8 @@ def set_verprog(template, version=None, prog=None):
     return Template(template).safe_substitute(**data)
 
 
-@contextmanager
-def tempdir():
-    '''Create and remove temporary directory
+def tempdir(ctx=True):
+    '''Create temporary directory and remove it when used as contextmanager.
 
     >>> with tempdir() as tmpdir:
     ...     isdir(tmpdir)
@@ -207,10 +223,18 @@ def tempdir():
     ...     pass
     >>> isdir(tmpdir)
     False
+    >>> isinstance(tempdir(ctx=False), str)
+    True
     '''
-    tmpdir = mkdtemp()
-    yield tmpdir
-    rmtree(tmpdir)
+    @contextmanager
+    def _tempdir():
+        tmpdir = mkdtemp()
+        yield tmpdir
+        rmtree(tmpdir)
+
+    if ctx:
+        return _tempdir()
+    return mkdtemp()
 
 
 @contextmanager
@@ -228,12 +252,12 @@ def tempfile():
     >>> isfile(fh.name)
     False
     '''
-    tmpfile = mkstemp()
-    os.close(tmpfile[0])
-    filehandle = open(tmpfile[1], 'w+')
+    tmpfile_fd, tmpfile = mkstemp()
+    os.close(tmpfile_fd)
+    filehandle = open(tmpfile, 'w+')
     yield filehandle
     filehandle.close()
-    os.remove(tmpfile[1])
+    remove(tmpfile)
 
 
 def _get_option(option_string):
@@ -262,6 +286,7 @@ def _patch_argparse_clg(types):
 
     Use stderr to print help and version. Allow line breaks on clg.
     Add custom types to clg. stdout is best used for shell export envvars.
+    Replace help and version exit status by 1 instead of 0.
     '''
     # argparse_HelpFormatter = argparse.HelpFormatter
     # # Monkeypatch argparse and clg
@@ -275,6 +300,8 @@ def _patch_argparse_clg(types):
     clg.TYPES.update(types)
     try:
         yield
+    except SystemExit:
+        raise SystemExit(1)
     finally:
         # Un-monkeypatch argparse and clg
         clg.TYPES = TYPES

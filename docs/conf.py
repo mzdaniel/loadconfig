@@ -32,7 +32,7 @@ pygments_style = 'sphinx'
 extensions = ['sphinx.ext.doctest']
 
 try:
-    import rst2pd  # noqa
+    import rst2pdf  # noqa
     extensions += ['rst2pdf.pdfbuilder']
 except ImportError as e:
     pass

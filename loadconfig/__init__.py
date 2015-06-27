@@ -11,8 +11,8 @@ import clg
 from collections import OrderedDict
 from copy import deepcopy
 from itertools import count
-from lib import (delregex, dfl, exc, findregex, read_config_file, set_verprog,
-    _get_option, _get_version, _patch_argparse_clg)
+from lib import (delregex, dfl, exc, findregex, flatten, read_config_file,
+    set_verprog, _get_option, _get_version, _patch_argparse_clg)
 from six.moves import cStringIO, shlex_quote
 from string import Template
 import yaml
@@ -104,10 +104,10 @@ class Odict(OrderedDict):
         self[name] = value
 
     def __str__(self):
-        return self.dump(False)
+        return Odict.dump(self, False)
 
     def __repr__(self):
-        return self.dump()
+        return Odict.dump(self)
 
     # Convenient shortcuts
     _r = property(__repr__)
@@ -127,8 +127,8 @@ class Odict(OrderedDict):
                 self.add_constructor('!expand', self.expand)
 
             def include(self, safeloader, node):
-                data = ''
-                node = self.construct_scalar(node)
+                data = None
+                node = safeloader.construct_scalar(node)
                 filepath, sep, key = node.partition(':')
                 with exc(IOError), open(filepath) as fh:
                     data = yaml.load(fh, Loader)
@@ -146,7 +146,7 @@ class Odict(OrderedDict):
                 return data
 
             def expand(self, safeloader, node):
-                key = self.construct_scalar(node)  # noqa
+                key = safeloader.construct_scalar(node)
                 if hasattr(self.__class__, '_include_data'):
                     data = self.__class__._include_data
                     for k in key.split(':'):
@@ -156,11 +156,12 @@ class Odict(OrderedDict):
                     return data
 
             def construct_mapping(self, safeloader, node):
-                self.flatten_mapping(node)
-                return Odict(self.construct_pairs(node))
+                safeloader.flatten_mapping(node)
+                return Odict(safeloader.construct_pairs(node))
 
         return yaml.load(yaml_string, Loader)
 
+    @staticmethod
     def dump(self, default_flow_style=True):
         '''Serialize odict into yaml string'''
         class Dumper(yaml.SafeDumper):
@@ -224,9 +225,7 @@ class Config(Odict):
             return
         self._expand_keys(config_data)
         args = self._load_options(args)
-        ret = self._load_config_cli(args, types)
-        if ret:  # load_config_cli want to exit
-            sys.exit(1)
+        self._load_config_cli(args, types)
         self._checkconfig()
 
     def _expand_keys(self, config_data=''):
@@ -246,6 +245,12 @@ class Config(Odict):
             config_string = Template(config_string).safe_substitute(self)
             self.update(config_string)
 
+    def _load_config_file(self, filepath):
+        '''Return config file adding data from loadconfig.template keyword'''
+        datafile = read_config_file(filepath)
+        self._expand_keys(datafile)
+        return datafile
+
     def _load_options(self, args):
         '''Load config from options -E and -C from cli arguments.
 
@@ -260,7 +265,9 @@ class Config(Odict):
         for arg in findregex('^(-E|-C)=', args):
             config_string, option = _get_option(arg)
             if option == 'C':
-                config_string = read_config_file(config_string)
+                # Expand $ keys in file name
+                config_string = Template(config_string).safe_substitute(self)
+                config_string = self._load_config_file(config_string)
             self._expand_keys(config_string)
         # Prevent clg seeing -E or -C options
         return delregex('^(-E|-C)=', args)
@@ -283,15 +290,10 @@ class Config(Odict):
         '''
         if not args or 'clg' not in self:
             return
-        try:  # Prevent clg to exit if -v or -h
-            with _patch_argparse_clg(types):
-                clg_args = clg.CommandLine(deepcopy(self.clg)).parse(
-                    args[1:])
-            self._expand_keys(clg_args)  # Add config from cli args
-        except SystemExit:
-            return True  # Ask __init__ to exit
-        finally:
-            del self['clg']  # Remove clg key from Config
+        with _patch_argparse_clg(types):
+            clg_args = clg.CommandLine(deepcopy(self.clg)).parse(args[1:])
+        self._expand_keys(clg_args)  # Add config from cli args
+        del self['clg']  # Remove clg key from Config
 
     def _checkconfig(self):
         '''Check configuration using keyword checkconfig
@@ -308,10 +310,12 @@ class Config(Odict):
         '''
         if 'checkconfig' in self:
             exec(self.checkconfig)
+            self._expand_keys('')
             del self['checkconfig']
 
     def export(self):
         r'''Export the config for shell usage.
+        Keys are uppercased. List-like keys are flattened.
 
         >>> c = Config('activity: hanggliding')
         >>> c.export()
@@ -321,8 +325,11 @@ class Config(Odict):
         for key in self:
             val = dfl(self[key])
             # Make list-like keys shell friendly
-            if type(val) in [list, tuple]:
+            if isinstance(val, (list, tuple)):
+                val = flatten(val)
                 val = ' '.join([shlex_quote(e) for e in val])
+            elif isinstance(val, dict):
+                val = repr(val)
             retval += 'export {}="{}"\n'.format(
                 key.upper().replace(' ', '_'), val)
         return retval[:-1]
