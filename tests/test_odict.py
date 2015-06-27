@@ -6,6 +6,7 @@ For manual run:
     pip install -rtests/test_requirements.txt
     python -m pytest tests/test_odict.py
 '''
+from os import environ
 from os.path import dirname, abspath
 import sys
 sys.path.insert(0, dirname(abspath(__file__)))
@@ -66,3 +67,16 @@ def test_include_config_wont_empty_subkey_lists():
                     list: [1, 2]
                 '''.format(fh.name))
     assert '{test: {list: [1, 2]}}' == repr(c)
+
+
+def test_env():
+    '''Test yaml !env tag'''
+    environ['CITY'] = 'San Francisco'
+    c = Config('!env city')
+    assert 'San Francisco' == c.city
+    del environ['CITY']
+
+
+def test_env_unexistent():
+    c = Config('!env city')
+    assert None == c.city

@@ -13,6 +13,7 @@ from copy import deepcopy
 from itertools import count
 from lib import (delregex, dfl, exc, findregex, flatten, read_config_file,
     set_verprog, _get_option, _get_version, _patch_argparse_clg)
+from os import environ
 from six.moves import cStringIO, shlex_quote
 from string import Template
 import yaml
@@ -123,8 +124,15 @@ class Odict(OrderedDict):
             def __init__(self, *args, **kwargs):
                 super(Loader, self).__init__(*args, **kwargs)
                 self.add_constructor(self.yaml_mapping, self.construct_mapping)
+                self.add_constructor('!env', self.env)
                 self.add_constructor('!include', self.include)
                 self.add_constructor('!expand', self.expand)
+
+            def env(self, safeloader, node):
+                node = self.construct_scalar(node)
+                if node.upper() in environ:
+                    return {node: environ[node.upper()]}
+                return {node: None}
 
             def include(self, safeloader, node):
                 data = None
