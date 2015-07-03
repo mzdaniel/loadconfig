@@ -5,7 +5,11 @@
 from os import environ
 from os.path import dirname, abspath
 from setuptools import setup
-from six.moves.configparser import ConfigParser
+import sys
+if sys.version_info[0] == 3:
+    from configparser import ConfigParser
+else:
+    from ConfigParser import ConfigParser
 
 c = ConfigParser()
 c.read('{}/setup.cfg'.format(dirname(abspath(__file__))))
