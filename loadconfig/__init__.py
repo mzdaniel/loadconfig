@@ -19,7 +19,7 @@ from string import Template
 import yaml
 from yaml.scanner import ScannerError
 
-__version__ = _get_version()
+__version__ = _get_version('loadconfig')
 
 
 class Odict(OrderedDict):

@@ -101,6 +101,15 @@ def dfl(value, dfl=''):
     return value if value not in [None, ''] else dfl
 
 
+def first(l):
+    '''Get first element of a list or generator. Return None if empty.
+
+    >>> first([1,2,3])
+    1
+    '''
+    return next(iter(l), None)
+
+
 @contextmanager
 def exc(exception=BaseException):
     '''Swallow exceptions
@@ -179,22 +188,29 @@ def read_config_file(config_path):
 
 
 def run(cmd, **kwargs):
-    r'''Execute command cmd. Return stdout, stderr, (ret)code
-
-    >>> run('echo $((1+1))').stdout
+    r'''Execute command cmd. Return stdout, stderr, (ret)code and pid
+    >>> ret = run('echo $((1+1))')
+    >>> ret
     '2\n'
+    >>> ret.code
+    0
     >>> ret = run('not_script.sh')
-    >>> ret.stdout, ret.stderr, ret.code
-    ('', '/bin/bash: not_script.sh: command not found\n', 127)
+    >>> ret.stdout, ret.stderr, ret.code, ret.pid
+    ('', '/bin/sh: not_script.sh: command not found\n', 127, ...)
     '''
-    class ret(object):  # define a return object
-        pass
+    class Ret(str):
+        _r = property(lambda self: self.__dict__)
     kwargs['universal_newlines'] = kwargs.get('universal_newlines', True)
     kwargs['stdout'] = kwargs.get('stdout', PIPE)
     kwargs['stderr'] = kwargs.get('stderr', PIPE)
-    p = Popen(['/bin/bash', '-c', cmd], **kwargs)
-    ret.stdout, ret.stderr = p.communicate()
-    ret.code = p.returncode
+    kwargs['shell'] = kwargs.get('shell', True)
+    proc = Popen(cmd, **kwargs)
+    stdout, stderr = proc.communicate()
+    ret = Ret(stdout)
+    ret.stdout = stdout
+    ret.stderr = stderr
+    ret.code = proc.returncode
+    ret.pid = proc.pid
     return ret
 
 
@@ -273,11 +289,10 @@ def _get_option(option_string):
     return value, option
 
 
-def _get_version():
+def _get_version(package):
     '''Get version from package installer using this module name'''
     pkgs = get_installed_distributions()
-    return {e.key: e.version for e in pkgs}.get(
-        basename(dirname(abspath(__file__))))
+    return {e.key: e.version for e in pkgs}.get(package, '')
 
 
 @contextmanager
