@@ -1,12 +1,29 @@
 CHANGES
 =======
 
+0.0.9
+-----
+
+* release 0.0.9
+* Make README.rst more github compatible.
+* Add yaml file loading capability with new !read tag. Expand docs.
+  Add README.rst badges. Add Config run functionality. Improve tests
+* Make get_version library function more generic. Add first and improve run
+  lib functions
+* Refactor yaml Config methods. Make Config return empty string on None
+* Remove six dependency when pip installing from sources
+* Improve Pypi classification
+* Get docs version from setup.cfg
+
 0.0.8
 -----
 
 * release 0.0.8
 * Add yaml !env environment variables to config
-* Significantly improve testing and debugging with pytest. Refactor and add new tests using pytest. Add new odict tests. Make key expansion more robust. Expand $ keys within -C arguments. Flatten lists on config export. Multiple library improvements
+* Significantly improve testing and debugging with pytest. Refactor and add
+  new tests using pytest. Add new odict tests. Make key expansion more robust.
+  Expand $ keys within -C arguments. Flatten lists on config export. Multiple
+  library improvements
 
 0.0.7
 -----
