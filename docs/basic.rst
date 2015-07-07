@@ -14,6 +14,8 @@ Inline config
 
 Lets start with the most simple and practical example:
 
+.. doctest::
+
     >>> from loadconfig import Config
     >>> Config('greeter: Hi there')
     {greeter: Hi there}

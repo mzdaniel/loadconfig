@@ -12,7 +12,7 @@ from loadconfig.lib import run
 def test_run():
     ret = run('not_script.sh')
     assert '' == ret.stdout
-    assert '/bin/sh: not_script.sh: command not found\n' == ret.stderr
+    assert ret.stderr.startswith('/bin/sh: not_script.sh:')
     assert 127 == ret.code
     assert 65536 > ret.pid
     assert 127 == ret._r['code']

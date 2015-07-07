@@ -77,6 +77,15 @@ def test_env():
     del environ['CITY']
 
 
+def test_read():
+    '''Test yaml !read tag'''
+    with tempfile() as fh:
+        fh.write('/usr/local/lib')
+        fh.flush()
+        assert {'libpath': '/usr/local/lib'} == Config('libpath: !read {}'.
+            format(fh.name))
+
+
 def test_env_unexistent():
     c = Config('!env city')
     assert '' == c.city

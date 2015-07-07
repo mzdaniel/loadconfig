@@ -4,7 +4,20 @@
 loadconfig
 ==========
 
-loadconfig is a tool to simplify configuration management.
+.. image:: https://readthedocs.org/projects/loadconfig/badge/?version=master
+    :target: http://loadconfig.readthedocs.org/en/master
+    :alt: [Docs]
+.. image:: https://img.shields.io/badge/buildbot-status-blue.jpg
+    :target: http://loadconfig.glidelink.net
+    :alt: [Build tests]
+.. image:: https://img.shields.io/badge/github-repo-yellowgreen.jpg
+    :target: https://github.com/mzdaniel/loadconfig
+    :alt: [Code repo]
+.. image:: https://img.shields.io/pypi/v/loadconfig.jpg
+    :target: https://pypi.python.org/pypi/loadconfig
+    :alt: [Pypi package]
+
+|br|:m15:`loadconfig is a tool to simplify configuration management.` |br|
 
 We live in an incredible moment in software history. As never before, the
 quality and quantity of excellent open source software have unleashed massive
@@ -14,14 +27,16 @@ how the pieces fit together. More importantly, we are concern on how can we use
 the software for things that matter to us.
 
 Plenty of times we find what is really needed is a small custom configuration
-we can easily understand and a handful ways to call the software. And although
+we can easily understand and a handful ways to run the software. And although
 we barely think about it as we are too busy trying to understand all the bells
-and whistles, the interface and documentation is in the center of any software.
+and whistles, the interface and documentation is at the center of any software.
 
 loadconfig syntax is designed to be clean and DRY, to foster descriptive
 programming, and to leverage version control systems. loadconfig can be used
 as a light wrapper around programs to make them behave and to document them
-the way we design.
+the way we designed.
+
+.. code-block:: python
 
     >>> from loadconfig import Config
     >>> c = Config('greeter: Hi there')
@@ -31,9 +46,7 @@ the way we design.
     >>> c.greeter
     'Hi there'
 
-.. highlight:: bash
-
-::
+.. code-block:: bash
 
     $ loadconfig -E="greeter: Welcome to the loadconfig documentation"
     export GREETER="Welcome to the loadconfig documentation"
@@ -47,13 +60,14 @@ Contents
 
     basic
     intermediate
+    advanced
     examples
 
 
 Technical description
 =====================
 
-loadconfig dynamically creates a python configuration order dictionary from
+loadconfig dynamically creates a python configuration ordered dictionary from
 sources like the command line, configuration files and yaml strings that can
 be used in python code and shell scripts. Dependencies are pyyaml, clg and six.
 
@@ -76,7 +90,9 @@ Local test/build
 Assumptions for this section: A unix system, python2.7 or 3.4, and pip >= 6.1.
 Although git is recommended, it is not required.
 
-loadconfig is hosted on github::
+loadconfig is hosted on github
+
+.. code-block:: bash
 
     # Download the project using git
     git clone https://github.com/mzdaniel/loadconfig
@@ -90,15 +106,19 @@ For a simple way to run the tests with minimum dependencies, tests/runtests.sh
 is provided.
 Note: python programs and libraries depend on the environment where it is run.
 At a minimun, it is adviced to run the tests and build process in a virtualenv.
-tox is the recommended way to run loadconfig tests and build its package::
+tox is the recommended way to run loadconfig tests and build its package:
 
-    # Install loadconfig dependencies.
-    pip install -r requirements.txt
+.. code-block:: bash
+
+    # Install loadconfig dependencies and pytest
+    pip install -r requirements.txt pytest
 
     # Run the tests
     ./tests/runtests.sh
 
-For building a pip installable wheel, pbr is used::
+For building a universal pip installable wheel, pbr is used:
+
+.. code-block:: bash
 
     # Install setup.py dependencies if needed.
     pip install pbr wheel six
@@ -109,7 +129,9 @@ For building a pip installable wheel, pbr is used::
 We use tox to test loadconfig in virtualenvs for both python2.7 and python3.4.
 `Tox`_ is a generic virtualenv management and test command line tool. It
 handles the creation of virtualenvs with proper python dependencies for
-testing, pep8 checking, coverage and building::
+testing, pep8 checking, coverage and building:
+
+.. code-block:: bash
 
     # Install the only tox dependency if needed (tox takes care of any other
     # needed dependency using pip)
@@ -120,10 +142,11 @@ testing, pep8 checking, coverage and building::
     tox
 
 If you are curious, `loadconfig buildbot`_ continuos integration server shows
-the tox test and build run for each commit done in the loadconfig repo.
+the tox tests and build runs for each commit and pull requests done in the
+loadconfig repo.
 
 .. _tox: http://tox.readthedocs.org
-.. _loadconfig buildbot: http://buildbot.gdl/waterfall
+.. _loadconfig buildbot: http://loadconfig.glidelink.net/waterfall
 
 
 Security

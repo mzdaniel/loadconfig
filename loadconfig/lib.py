@@ -196,7 +196,7 @@ def run(cmd, **kwargs):
     0
     >>> ret = run('not_script.sh')
     >>> ret.stdout, ret.stderr, ret.code, ret.pid
-    ('', '/bin/sh: not_script.sh: command not found\n', 127, ...)
+    ('', '/bin/sh: not_script.sh:...not found\n', 127, ...)
     '''
     class Ret(str):
         _r = property(lambda self: self.__dict__)

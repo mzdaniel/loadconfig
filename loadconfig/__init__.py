@@ -126,6 +126,7 @@ class Odict(OrderedDict):
                 super(Loader, self).__init__(*args, **kwargs)
                 self.add_constructor(self.yaml_mapping, self.construct_mapping)
                 self.add_constructor('!env', self.env)
+                self.add_constructor('!read', self.read)
                 self.add_constructor('!include', self.include)
                 self.add_constructor('!expand', self.expand)
 
@@ -134,6 +135,10 @@ class Odict(OrderedDict):
                 if node.upper() in environ:
                     return {node: environ[node.upper()]}
                 return {node: ''}
+
+            def read(self, safeloader, node):
+                node = self.construct_scalar(node)
+                return read_file(node)
 
             def include(self, safeloader, node):
                 node = self.construct_scalar(node)
@@ -338,6 +343,28 @@ class Config(Odict):
             retval += 'export {}="{}"\n'.format(
                 key.upper().replace(' ', '_'), val)
         return retval[:-1]
+
+    def run(self, module='__main__'):
+        r'''Run selected subparser command.
+
+        >>> conf = Config("""
+        ...            prog: netapplet.py
+        ...            clg:
+        ...                subparsers:
+        ...                    install:
+        ...                        help: 'run as $prog install | bash'""")
+        >>> def install(c):
+        ...     print('echo "Installation shell script lines for {}."'.format(
+        ...         c.prog))
+        >>> # Ensure install function is reachable
+        >>> sys.modules[__name__].install = install
+        >>> c = Config(conf, args=['', 'install'])
+        >>> c.run(__name__)
+        echo "Installation shell script lines for netapplet.py."
+        '''
+        if isinstance(module, str):
+            module = sys.modules[module]
+        getattr(module, str(self.command0))(self)
 
     def __repr__(self):
         return repr(Odict(self))

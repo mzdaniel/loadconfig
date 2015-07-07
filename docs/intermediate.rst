@@ -37,8 +37,11 @@ form of expansion:
     {name: [Zeela, Kim], team: [Zeela, Kim], choreography: [Zeela, Kim]}
 
 
+loadconfig yaml goodies
+=======================
+
 Include
-=======
+~~~~~~~
 
 Another feature is the ability to include config files from a yaml config
 source:
@@ -66,7 +69,7 @@ specific config data:
 
 
 Substitution
-============
+~~~~~~~~~~~~
 
 This feature allows to expand just a key from a previously included yaml file
 
@@ -76,6 +79,33 @@ This feature allows to expand just a key from a previously included yaml file
     ...     '''
     >>> Config(conf)
     {colors: [iris, teal, coral]}
+
+
+Environment variables
+~~~~~~~~~~~~~~~~~~~~~
+
+Plenty of times it is *very* useful to access environment variables. They
+provide a way to inherit configuration and even they could make our programs
+more secure as envvars are runtime configuration.
+
+    >>> from os import environ
+    >>> environ['CITY'] = 'San Francisco'
+    >>> c = Config('!env city')
+    >>> c.city
+    'San Francisco'
+
+
+Read files
+~~~~~~~~~~
+
+Another common use is to load a key reading a file. This is different from
+include as the file content is literally loaded to the key instead of being
+interpreted as yaml
+
+    >>> with open('libpath.cfg', 'w') as fh:
+    ...     _ = fh.write('/usr/local/lib')
+    >>> Config('libpath: !read libpath.cfg')
+    {libpath: /usr/local/lib}
 
 
 Introducing -E and -C cli switches
@@ -147,6 +177,7 @@ updating and overriding older data with new values from the sequence::
 
     import os
     os.remove('birds.yml')
+    os.remove('libpath.cfg')
 
 .. _cli interface:
 
@@ -351,3 +382,4 @@ If we request debugging and define another path::
 Now that we have a good overview of the different pieces, lets put them
 together. We have built enough knowledge to fully understand our magical
 loadconfig program on the :ref:`examples <examples>` chapter.
+More advanced material can also be found in :ref:`advanced tutorial`.

@@ -8,7 +8,10 @@ from six.moves.configparser import ConfigParser
 
 c = ConfigParser()
 c.read('{}/setup.cfg'.format(ROOT_PATH))
-__version__ = c.get('metadata', 'version')
+try:
+    __version__ = c.get('metadata', 'version')
+except Exception:
+    __version__ = ''
 
 try:
     import sphinx_bootstrap_theme
@@ -60,3 +63,16 @@ templates_path = ['_templates']
 
 html_sidebars = {
     '*': ['sidebartoc.html', 'searchbox.html']}
+
+# Include badges without warnings.
+# https://github.com/sphinx-doc/sphinx/issues/1895
+
+from docutils.utils import get_source_line
+import sphinx.environment
+
+
+def _warn_node(self, msg, node):
+    if not msg.startswith('nonlocal image URI found:'):
+        self._warnfunc(msg, '%s:%s' % get_source_line(node))
+
+sphinx.environment.BuildEnvironment.warn_node = _warn_node
