@@ -1,5 +1,3 @@
-.. include:: /defs.irst
-
 ==========
 loadconfig
 ==========
@@ -17,7 +15,14 @@ loadconfig
     :target: https://pypi.python.org/pypi/loadconfig
     :alt: [Pypi package]
 
-|br|:m15:`loadconfig is a tool to simplify configuration management.` |br|
+.. sidebar:: :doc:`index <../index>`
+
+    .. contents::
+        :depth: 3
+
+
+loadconfig is a tool to simplify configuration management
+=========================================================
 
 We live in an incredible moment in software history. As never before, the
 quality and quantity of excellent open source software have unleashed massive
