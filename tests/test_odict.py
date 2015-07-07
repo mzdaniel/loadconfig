@@ -79,4 +79,4 @@ def test_env():
 
 def test_env_unexistent():
     c = Config('!env city')
-    assert None == c.city
+    assert '' == c.city

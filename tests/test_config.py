@@ -132,7 +132,7 @@ def test_include_unknown_key(f):
         fh.write(conf)
         fh.flush()
         c = Config('photon: !include {}:properties'.format(fh.name))
-        assert Odict('photon: null') == c
+        assert Odict("photon: ''") == c
 
 
 def test_expand_tag(f):
@@ -162,7 +162,7 @@ def test_expand_unknown_key(f):
         c = Config('''\
             _: !include {}:&
             photon: !expand properties:viscosity'''.format(fh.name))
-        assert Odict('photon: null') == c
+        assert Odict("photon: ''") == c
 
 
 def test_extra_config_expansion(f):

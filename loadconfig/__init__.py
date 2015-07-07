@@ -11,8 +11,8 @@ import clg
 from collections import OrderedDict
 from copy import deepcopy
 from itertools import count
-from lib import (delregex, dfl, exc, findregex, flatten, read_config_file,
-    set_verprog, _get_option, _get_version, _patch_argparse_clg)
+from lib import (delregex, dfl, findregex, flatten, read_config_file,
+    read_file, set_verprog, _get_option, _get_version, _patch_argparse_clg)
 from os import environ
 from six.moves import cStringIO, shlex_quote
 from string import Template
@@ -120,6 +120,7 @@ class Odict(OrderedDict):
         '''Return pair list from a yaml string'''
         class Loader(yaml.SafeLoader):
             yaml_mapping = yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG
+            _data = ''
 
             def __init__(self, *args, **kwargs):
                 super(Loader, self).__init__(*args, **kwargs)
@@ -132,36 +133,32 @@ class Odict(OrderedDict):
                 node = self.construct_scalar(node)
                 if node.upper() in environ:
                     return {node: environ[node.upper()]}
-                return {node: None}
+                return {node: ''}
 
             def include(self, safeloader, node):
-                data = None
-                node = safeloader.construct_scalar(node)
+                node = self.construct_scalar(node)
                 filepath, sep, key = node.partition(':')
-                with exc(IOError), open(filepath) as fh:
-                    data = yaml.load(fh, Loader)
-                if not data:
-                    return
-                self.__class__._include_data = data
-                if sep == '':
-                    return data
-                if key == '&':
-                    return
-                for k in key.split(':'):
-                    data = data.get(k)
-                    if data is None:
-                        return
-                return data
+                self._data = yaml.load(read_file(filepath), Loader)
+                return self.subkey(key)
 
             def expand(self, safeloader, node):
-                key = safeloader.construct_scalar(node)
-                if hasattr(self.__class__, '_include_data'):
-                    data = self.__class__._include_data
-                    for k in key.split(':'):
-                        data = data.get(k)
-                        if data is None:
-                            return
-                    return data
+                key = self.construct_scalar(node)
+                self._data = safeloader._data
+                return self.subkey(key)
+
+            def subkey(self, key):
+                if not self._data:
+                    return ''
+                data = deepcopy(self._data)
+                if key == '&':
+                    return ''
+                for k in key.split(':'):
+                    if not k:
+                        return data
+                    data = data.get(k)
+                    if data is None:
+                        return ''
+                return data
 
             def construct_mapping(self, safeloader, node):
                 safeloader.flatten_mapping(node)
@@ -322,7 +319,7 @@ class Config(Odict):
             del self['checkconfig']
 
     def export(self):
-        r'''Export the config for shell usage.
+        '''Export the config for shell usage.
         Keys are uppercased. List-like keys are flattened.
 
         >>> c = Config('activity: hanggliding')
