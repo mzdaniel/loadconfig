@@ -15,9 +15,9 @@ import os
 from os import remove
 from os.path import basename, dirname, abspath, exists, isdir, isfile
 from pip import get_installed_distributions
+from py6 import cStringIO
 import re
 from shutil import rmtree
-from six.moves import cStringIO
 from subprocess import Popen, PIPE
 import sys
 from tempfile import mkdtemp, mkstemp

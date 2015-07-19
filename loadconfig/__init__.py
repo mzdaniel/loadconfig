@@ -16,7 +16,7 @@ from itertools import count
 from lib import (delregex, dfl, findregex, flatten, read_config_file,
     read_file, _get_option, _patch_argparse_clg)
 from os import environ
-from six.moves import cStringIO, shlex_quote
+from py6 import cStringIO, shlex_quote
 from string import Template
 import yaml
 from yaml.scanner import ScannerError

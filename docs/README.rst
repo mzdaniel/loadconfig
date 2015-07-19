@@ -57,7 +57,7 @@ Technical description
 
 loadconfig dynamically creates a python configuration ordered dictionary from
 sources like the command line, configuration files and yaml strings that can
-be used in python code and shell scripts. Dependencies are pyyaml, clg and six.
+be used in python code and shell scripts. Dependencies are pyyaml and clg.
 
 
 Installation
@@ -111,7 +111,7 @@ For building a universal pip installable wheel, pbr is used:
 
 
     # Install setup.py dependencies if needed.
-    pip install pbr wheel six
+    pip install pbr wheel
 
     # Build loadconfig package
     python setup.py bdist_wheel
