@@ -1,6 +1,15 @@
 CHANGES
 =======
 
+0.1b1
+-----
+
+* Remove six dependency
+* Simplify API adding version and prog. Update tests and docs
+* Refactor argparse_clg patch to simplify SystemExit interface. Update tests
+  and docs
+* Refactor README.rst to make Pypi happy
+
 0.0.9
 -----
 
