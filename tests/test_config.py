@@ -14,7 +14,7 @@ from loadconfig.lib import addpath
 addpath(__file__, parent=True)
 
 from loadconfig import Config, Odict
-from loadconfig.lib import (capture_stream, exc, run, tempdir, tempfile)
+from loadconfig.lib import (exc, run, tempdir, tempfile)
 from os.path import basename
 from pytest import fixture
 import re
@@ -187,25 +187,22 @@ def test_attribute_auto_expansion(f):
 
 def test_verprog(f):
     '''Test version and program show properly.'''
-    with capture_stream('stderr') as stderr, exc(SystemExit) as e:
+    with exc(SystemExit) as e:
         Config({'version': f.version, 'prog': f.prog},
-               args=[f.prog, '-v', '-E="{}"'.format(f.conf)])
-    assert '{} {}\n'.format(f.prog, f.version) == stderr.getvalue()
-    assert 1 == e().code
+            args=[f.prog, '-v', '-E="{}"'.format(f.conf)], types={basename})
+    assert '{} {}'.format(f.prog, f.version) == e().args[0]
 
 
 def test_verprog_from_options(f):
-    with tempfile() as fh, capture_stream('stderr') as stderr:
+    with tempfile() as fh, exc(SystemExit) as e:
         fh.write(f.conf)
         fh.flush()
-        try:
-            Config(args=[f.prog, '-v',
-                '-E="prog: {}"'.format(f.prog),
-                '-C="{}"'.format(fh.name),
-                '-E="version: {}"'.format(f.version)])
-        except SystemExit:
-            pass
-    assert '{} {}\n'.format(f.prog, f.version) == stderr.getvalue()
+        Config({'version': f.version, 'prog': f.prog}, types={basename}, args=[
+            f.prog, '-v',
+            '-E="prog: {}"'.format(f.prog),
+            '-C="{}"'.format(fh.name),
+            '-E="version: {}"'.format(f.version)])
+    assert '{} {}'.format(f.prog, f.version) == e().args[0]
 
 
 def test_convenient_config_file_from_directory(f):
@@ -220,9 +217,9 @@ def test_convenient_config_file_from_directory(f):
 
 def test_help(f):
     '''Test version and program show properly.'''
-    with capture_stream('stderr') as stderr, exc(SystemExit) as e:
+    with exc(SystemExit) as e:
         Config({'version': f.version, 'prog': f.prog},
-            args=[f.prog, '-h', '-E="{}"'.format(f.conf)])
+        args=[f.prog, '-h', '-E="{}"'.format(f.conf)], types={basename})
     exp = dedent('''\
         usage: dbuild [-h] [-v] [-e EXTRA_CONFIG] host [args [args ...]]
 
@@ -235,10 +232,8 @@ def test_help(f):
         optional arguments:
           -h, --help            show this help message and exit
           -v, --version         show program's version number and exit
-          -e EXTRA_CONFIG, --extra-config EXTRA_CONFIG
-        ''')
-    assert exp == stderr.getvalue()
-    assert 1 == e().code
+          -e EXTRA_CONFIG, --extra-config EXTRA_CONFIG''')
+    assert exp == e().args[0]
 
 
 def test_config(f):

@@ -240,14 +240,9 @@ that matters for the programmer instead of the individual lines of code
 normally required by programming languages. This is what this author calls
 descriptive programming.
 
-The following lines shows the same snippet for python. As usually all the setup
-involved to validate the doctest is just too distracting, we will use a handy
-advanced technique here. From all these lines, the only two that matters are
-the definition of conf, and the Config assignment. Lets play with clg:
+The following lines shows the same snippet for python. Lets play with clg:
 
     >>> from loadconfig import Config
-    >>> from mock import patch
-    >>> from six.moves import cStringIO
     >>> conf = '''
     ...     clg:
     ...         description: Build a full system
@@ -255,13 +250,11 @@ the definition of conf, and the Config assignment. Lets play with clg:
     ...             host:
     ...                 help: Host to build
     ...     '''
-    >>> with patch('sys.stderr', new_callable=cStringIO) as stderr:
-    ...     try:
-    ...         c = Config(conf, args=['', '--help'])
-    ...     except SystemExit:
-    ...         pass
-
-    >>> print(stderr.getvalue())
+    >>> try:
+    ...     c = Config(conf, args=['', '--help'])
+    ... except SystemExit as e:
+    ...     pass
+    >>> print(e.code)
     usage: sphinx-build [-h] host
     <BLANKLINE>
     Build a full system
@@ -271,7 +264,6 @@ the definition of conf, and the Config assignment. Lets play with clg:
     <BLANKLINE>
     optional arguments:
       -h, --help  show this help message and exit
-    <BLANKLINE>
 
 And putting the 'conf' in action:
 
@@ -282,7 +274,6 @@ And putting the 'conf' in action:
 
 Multiple arguments and options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 Lets take a closer look at CLG. Here is the clg key of the sphinx program
 used to render and browse this very documentation in real time::

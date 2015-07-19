@@ -12,7 +12,7 @@ addpath(__file__)
 addpath(__file__, parent=True)
 
 from loadconfig import Config
-from loadconfig.lib import (capture_stream, ppath, run, import_file,
+from loadconfig.lib import (exc, capture_stream, ppath, run, import_file,
     set_verprog, tempdir, tempfile)
 from os.path import dirname
 from pytest import fixture
@@ -85,12 +85,9 @@ def test_main_usage(c):
     '''loadconfig main usage unittest'''
     conf_option = '-E="{}"'.format(c.conf)
     exp = '{} {}'.format(c.prog, c.test_version)
-    with capture_stream('stderr') as stderr:
-        try:
-            main([c.prog, conf_option, '-v'])
-        except SystemExit:
-            pass
-    assert exp == stderr.getvalue()[:-1]
+    with exc(SystemExit) as e:
+        main([c.prog, conf_option, '-v'])
+    assert exp == e().args[0]
 
 
 def test_from_string(c):

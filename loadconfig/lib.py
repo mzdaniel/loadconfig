@@ -303,22 +303,24 @@ def _patch_argparse_clg(types):
     Add custom types to clg. stdout is best used for shell export envvars.
     Replace help and version exit status by 1 instead of 0.
     '''
+    def ap_print_message(self, message, file=None):
+        if message and message[-1] == '\n':
+            message = message[:-1]
+        raise SystemExit(message)
     # argparse_HelpFormatter = argparse.HelpFormatter
     # # Monkeypatch argparse and clg
-    stdout = sys.stdout
-    sys.stdout = sys.stderr
     argparse_HelpFormatter = argparse.HelpFormatter
     argparse.HelpFormatter = argparse.RawTextHelpFormatter
+    argparse_print_message = argparse.ArgumentParser._print_message
+    argparse.ArgumentParser._print_message = ap_print_message
     TYPES = clg.TYPES
-    # clg expects a dictionary with function name as keys
+    # clg expects a dictionary with function names as keys
     types = {e.__name__: e for e in types}
     clg.TYPES.update(types)
     try:
         yield
-    except SystemExit:
-        raise SystemExit(1)
     finally:
         # Un-monkeypatch argparse and clg
         clg.TYPES = TYPES
         argparse.HelpFormatter = argparse_HelpFormatter
-        sys.stdout = stdout
+        argparse.ArgumentParser._print_message = argparse_print_message
