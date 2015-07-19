@@ -12,14 +12,14 @@ Extra demoscript.py documentation.
 
 version = '0.1.5'
 
-from loadconfig import Config, set_verprog
+from loadconfig import Config
 import sys
 
 conf = """\
     clg:
         description: $prog $version shows usage of loadconfig package
         epilog: |
-            Extra ${prog} documentation.
+            Extra $prog documentation.
         options:
             version:
                 short: v
@@ -28,8 +28,7 @@ conf = """\
 
 
 def main(args):
-    config = set_verprog(conf, version)
-    c = Config(config, args)
+    c = Config(conf, args, version=version)
     assert c.version == '0.1.5'
 
 if __name__ == '__main__':

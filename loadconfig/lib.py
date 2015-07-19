@@ -5,8 +5,7 @@ For partial manual run:
     python -m doctest lib.py -v
 '''
 __all__ = ['addpath', 'capture_stream', 'delregex', 'dfl', 'exc', 'findregex',
-    'import_file', 'read_config_file', 'ppath', 'run',
-    'set_verprog', 'tempdir', 'tempfile']
+    'import_file', 'read_config_file', 'ppath', 'run', 'tempdir', 'tempfile']
 __author__ = 'Daniel Mizyrycki'
 
 import argparse
@@ -20,7 +19,6 @@ import re
 from shutil import rmtree
 from six.moves import cStringIO
 from subprocess import Popen, PIPE
-from string import Template
 import sys
 from tempfile import mkdtemp, mkstemp
 from types import ModuleType
@@ -214,21 +212,6 @@ def run(cmd, **kwargs):
     return ret
 
 
-def set_verprog(template, version=None, prog=None):
-    '''Add program name and version to a config template string.
-
-    Shell programs need to define prog. prog is optional for python programs
-
-    >>> conf = 'version: $prog $version'
-    >>> set_verprog(conf, '0.1.2')  # doctest: +ELLIPSIS
-    'version: ... 0.1.2'
-    '''
-    data = {'prog': dfl(prog, basename(sys.argv[0]))}
-    if version:
-        data['version'] = version
-    return Template(template).safe_substitute(**data)
-
-
 def tempdir(ctx=True):
     '''Create temporary directory and remove it when used as contextmanager.
 
@@ -290,13 +273,18 @@ def _get_option(option_string):
 
 
 def _get_version(package):
-    '''Get version from package installer using this module name'''
+    '''Get version from package installer
+
+    >>> from pip import __version__
+    >>> __version__ == _get_version('pip')
+    True
+    '''
     pkgs = get_installed_distributions()
     return {e.key: e.version for e in pkgs}.get(package, '')
 
 
 @contextmanager
-def _patch_argparse_clg(types):
+def _patch_argparse_clg(args, types):
     '''Temporarely patch argparse and clg
 
     Use stderr to print help and version. Allow line breaks on clg.
@@ -309,6 +297,8 @@ def _patch_argparse_clg(types):
         raise SystemExit(message)
     # argparse_HelpFormatter = argparse.HelpFormatter
     # # Monkeypatch argparse and clg
+    sys_argv = sys.argv
+    sys.argv[0] = args[0]
     argparse_HelpFormatter = argparse.HelpFormatter
     argparse.HelpFormatter = argparse.RawTextHelpFormatter
     argparse_print_message = argparse.ArgumentParser._print_message
@@ -324,3 +314,4 @@ def _patch_argparse_clg(types):
         clg.TYPES = TYPES
         argparse.HelpFormatter = argparse_HelpFormatter
         argparse.ArgumentParser._print_message = argparse_print_message
+        sys.argv = sys_argv

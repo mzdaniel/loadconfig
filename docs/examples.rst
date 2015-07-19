@@ -29,14 +29,16 @@ strings.
 Following loadconfig's philosophy, its script implementation is in itself
 straightforward. All imperative programming aspects are kept to minimum. As we
 can see, all keywords and concepts of our conf python variable were already
-introduced in :ref:`cli interface`. set_verprog is just a convenient function
-that takes the conf variable expanding the prog and version variables. As prog
-is not defined, by default it will use sys.argv[0]. At this point, we are
-familiar with the Config function. c.export is just a Config method that
-iterates over all keywords defined, making them uppercase, replacing space by
-underline and prepending the word export. Want to take a guess? We will see
-shortly why. Finally, all the actual commands are enclosed in the main function
-as good organizational practice and as it allows for easy testing.
+introduced in :ref:`cli interface`. When using a clg key, loadconfig defines
+the $prog attribute using args[0]. This allows to decouple the program name
+from sys.argv[0]. Sometimes, it is nice to get the program version from an
+external source (eg: another module) and feed it into Config. The convenient
+Config version parameter is used in this case. At this point, we are familiar
+with the Config class. c.export is just a Config method that iterates over all
+keywords defined, making them uppercase, replacing space by underline and
+prepending the word export. Want to take a guess? We will see shortly why.
+Finally, all the actual commands are enclosed in the main function as good
+organizational practice and as it allows for easy testing.
 
 Ok Daniel, all of this looks fine. Did I miss something?
 

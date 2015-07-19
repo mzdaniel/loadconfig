@@ -251,11 +251,11 @@ The following lines shows the same snippet for python. Lets play with clg:
     ...                 help: Host to build
     ...     '''
     >>> try:
-    ...     c = Config(conf, args=['', '--help'])
+    ...     c = Config(conf, args=['sysbuild', '--help'])
     ... except SystemExit as e:
     ...     pass
     >>> print(e.code)
-    usage: sphinx-build [-h] host
+    usage: sysbuild [-h] host
     <BLANKLINE>
     Build a full system
     <BLANKLINE>
@@ -268,7 +268,7 @@ The following lines shows the same snippet for python. Lets play with clg:
 And putting the 'conf' in action:
 
     >>> Config(conf, args=['', 'antares'])
-    {host: antares}
+    {prog: '', host: antares}
 
 .. highlight:: bash
 

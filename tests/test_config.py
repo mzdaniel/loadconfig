@@ -28,7 +28,6 @@ def f(request):
         '''Generic config class for proper Config class testing'''
         conf = '''\
             clg:
-                prog: $prog
                 description: Build a full system
                 options:
                     version:
@@ -76,6 +75,11 @@ def test_arguments(f):
 
 def test_string_argument(f):
     c = Config('hi: there')
+    assert 'there' == c.hi
+
+
+def test_dict_argument(f):
+    c = Config({'hi': 'there'})
     assert 'there' == c.hi
 
 
@@ -188,8 +192,8 @@ def test_attribute_auto_expansion(f):
 def test_verprog(f):
     '''Test version and program show properly.'''
     with exc(SystemExit) as e:
-        Config({'version': f.version, 'prog': f.prog},
-            args=[f.prog, '-v', '-E="{}"'.format(f.conf)], types={basename})
+        Config(args=[f.prog, '-v', '-E="{}"'.format(f.conf)],
+            version=f.version, types={basename})
     assert '{} {}'.format(f.prog, f.version) == e().args[0]
 
 
@@ -197,8 +201,7 @@ def test_verprog_from_options(f):
     with tempfile() as fh, exc(SystemExit) as e:
         fh.write(f.conf)
         fh.flush()
-        Config({'version': f.version, 'prog': f.prog}, types={basename}, args=[
-            f.prog, '-v',
+        Config(types={basename}, args=[f.prog, '-v',
             '-E="prog: {}"'.format(f.prog),
             '-C="{}"'.format(fh.name),
             '-E="version: {}"'.format(f.version)])
@@ -218,8 +221,8 @@ def test_convenient_config_file_from_directory(f):
 def test_help(f):
     '''Test version and program show properly.'''
     with exc(SystemExit) as e:
-        Config({'version': f.version, 'prog': f.prog},
-        args=[f.prog, '-h', '-E="{}"'.format(f.conf)], types={basename})
+        Config(args=[f.prog, '-h', '-E="{}"'.format(f.conf)],
+            version=f.version, types={basename})
     exp = dedent('''\
         usage: dbuild [-h] [-v] [-e EXTRA_CONFIG] host [args [args ...]]
 
@@ -278,7 +281,7 @@ def test_functional_verprog(f):
     cmd = 'PYTHONPATH={0} {0}/tests/fixtures/{1} -v'.format(
         f.project_path, prog)
     ret = run(cmd)
-    regex = '^{} {}+[ \n]*$'.format(prog, version)
+    regex = '{} {}+[ \n]*$'.format(prog, version)
     assert re.search(regex, ret.stderr)
 
 

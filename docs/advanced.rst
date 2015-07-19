@@ -29,12 +29,11 @@ run and uninstall itself:
 
     #!/usr/bin/env python
 
-    from loadconfig import Config, set_verprog
+    from loadconfig import Config
     import sys
     from textwrap import dedent
 
     conf = dedent("""\
-                prog: $prog
                 clg:
                     subparsers:
                         run:
@@ -55,8 +54,7 @@ run and uninstall itself:
         print('Running {}'.format(c.prog))
 
     def main(args):
-        config = set_verprog(conf, prog=sys.argv[0])
-        c = Config(config, args=args)
+        c = Config(conf, args=args)
         c.run()
 
     if __name__ == '__main__':
@@ -69,14 +67,13 @@ A couple of runs will show:
 
     # Our program is not installed in the system /usr/bin directory
     netapplet.py
-    bash: /usr/bin/netapplet.py: No such file or directory
+    bash: netapplet.py: command not found
 
 
-    # Running netapplet.py from the current directory. command0 is a fancy
-    # name which in this case is either run, install or uninstall.
+    # Running netapplet.py from the current directory.
+    # ( ./ needs to be prepended to the command as . is not usually on $PATH )
     $ ./netapplet.py
     usage: netapplet.py [-h] {run,install,uninstall} ...
-    netapplet.py: error: the following arguments are required: command0
 
 
     # Retrieving help
@@ -99,7 +96,6 @@ A couple of runs will show:
 
 
     # Sounds good. Lets install it according to the help.
-    # ( ./ needs to be prepended to the command as . is not usually on $PATH )
     $ ./netapplet.py install | sudo bash
 
 
@@ -133,13 +129,12 @@ conf is a clg key with subparsers. This is an argparse concept which basically
 means a subcommand. In our case we have three of them with their documentation.
 If you are wondering why the quotes in the help of the subparsers keys, this is
 to escape the usual yaml meaning of the colon (:) char on these help strings.
-The main function uses the convenient set_verprog to replace $prog on the conf
-string with the program path. Next, it loads the configuration in the c
-variable, and finally c.run() executes the function invoked by the cli
+As we are using a clg key, loadconfig assigns args[0] to the $prog attribute,
+decoupling the program name from sys.argv[0]. Next, it loads the configuration
+in the c variable, and finally c.run() executes the function invoked by the cli
 arguments. c.run() only makes sense if the config holds a clg key with
 subparsers.
 
 This simple program succinctly highlights very common needs in a program
 lifecycle (configuration, interface, documentation, deployment) and it can
 easily be used as a base for more complex ones.
-

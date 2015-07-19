@@ -1,15 +1,8 @@
 """documentation config"""
-
-from os.path import dirname, abspath
 import sys
-ROOT_PATH = dirname(dirname(abspath(__file__)))
-sys.path.insert(0, '{}'.format(ROOT_PATH))
-from six.moves.configparser import ConfigParser
-
-c = ConfigParser()
-c.read('{}/setup.cfg'.format(ROOT_PATH))
+sys.path.append('..')
 try:
-    __version__ = c.get('metadata', 'version')
+    from loadconfig import __version__
 except Exception:
     __version__ = ''
 

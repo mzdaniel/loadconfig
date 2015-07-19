@@ -13,7 +13,7 @@ addpath(__file__, parent=True)
 
 from loadconfig import Config
 from loadconfig.lib import (exc, capture_stream, ppath, run, import_file,
-    set_verprog, tempdir, tempfile)
+    tempdir, tempfile)
 from os.path import dirname
 from pytest import fixture
 from textwrap import dedent as d
@@ -21,8 +21,8 @@ from textwrap import dedent as d
 # Import main function from loadconfig script.
 # These extra steps are needed as loadconfig script doesn't end in .py
 loadconfig_path = '{}/../scripts/loadconfig'.format(ppath(__file__))
-module = import_file(loadconfig_path)
-main = module.main
+loadconfig_module = import_file(loadconfig_path)
+main = loadconfig_module.main
 
 
 @fixture(scope='module')
@@ -30,15 +30,18 @@ def c(request):
     '''Config fixture. Return a config object for easy attribute access'''
 
     c = Config('''\
+        prog: test_loadconfig.py
+        test_version: 0.1.7
+
         conf: |
+            version: $test_version
             clg:
-                prog: $prog
                 description: Build a full system
                 options:
                     version:
                         short: v
                         action: version
-                        version: $prog $version
+                        version: $prog $test_version
                 args:
                     host:
                         help: Host to build
@@ -52,13 +55,9 @@ def c(request):
 
             system_path:       /data/salt/system
             docker__image:     reg.gdl/debian
-        prog: test_loadconfig.py
-        test_version: 0.1.7
         ''')
 
-    # load program and version from this test module (string substitution)
-    # prog argument is hardcoded as this test may be running under testsuite
-    c.conf = set_verprog(c.conf, c.test_version, c.prog)
+    # prog and version configs are hardcoded as this test runs in testsuite
     # Declare PYTHONPATH to use loadconfig package from this project
     c.project_path = dirname(ppath(__file__))
     c.loadconfig_cmd = 'PYTHONPATH={0} {0}/scripts/loadconfig'.format(
@@ -76,7 +75,9 @@ def test_main(c):
         export ARGS=""
         export DOCKER__IMAGE="reg.gdl/debian"
         export HOST="leon"
-        export SYSTEM_PATH="/data/salt/system"''')
+        export PROG="test_loadconfig.py"
+        export SYSTEM_PATH="/data/salt/system"
+        export VERSION="0.1.7"''')
     ret = '\n'.join(sorted(stdout.getvalue()[:-1].split('\n')))
     assert exp == ret
 

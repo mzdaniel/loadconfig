@@ -1,7 +1,9 @@
 '''loadconfig python library'''
 from __future__ import print_function
-__all__ = ['Config', 'set_verprog', 'Odict', '__version__']
+__all__ = ['Config', 'Odict', '__version__']
+
 __author__ = 'Daniel Mizyrycki'
+__version__ = '0.1b1.dev0'
 
 from os.path import dirname, abspath
 import sys
@@ -12,14 +14,12 @@ from collections import OrderedDict
 from copy import deepcopy
 from itertools import count
 from lib import (delregex, dfl, findregex, flatten, read_config_file,
-    read_file, set_verprog, _get_option, _get_version, _patch_argparse_clg)
+    read_file, _get_option, _patch_argparse_clg)
 from os import environ
 from six.moves import cStringIO, shlex_quote
 from string import Template
 import yaml
 from yaml.scanner import ScannerError
-
-__version__ = _get_version('loadconfig')
 
 
 class Odict(OrderedDict):
@@ -228,11 +228,15 @@ class Config(Odict):
     # Try up to max times to expand $ keys
     expand_max = 5
 
-    def __init__(self, config_data='', args=None, types={}):
+    def __init__(self, config_data='', args=None, version=None, types=set()):
         '''Initialize config object. Keep its __dict__ clean for easy access'''
         super(Config, self).__init__()
         if config_data == '' and args is None:
             return
+        if version:
+            self.version = version
+        if args and 'clg' in config_data:
+            self.prog = args[0]
         self._expand_keys(config_data)
         args = self._load_options(args)
         self._load_config_cli(args, types)
@@ -278,6 +282,8 @@ class Config(Odict):
                 # Expand $ keys in file name
                 config_string = Template(config_string).safe_substitute(self)
                 config_string = self._load_config_file(config_string)
+            if 'prog' not in self and 'clg' in config_string:
+                self.prog = args[0]
             self._expand_keys(config_string)
         # Prevent clg seeing -E or -C options
         return delregex('^(-E|-C)=', args)
@@ -294,13 +300,13 @@ class Config(Odict):
         ...             filename:
         ...                 type: basename
         ...     """)
-        >>> c._load_config_cli(args=['', '/data/data.txt'], types=[basename])
+        >>> c._load_config_cli(args=['', '/data/data.txt'], types={basename})
         >>> c.filename
         'data.txt'
         '''
         if not args or 'clg' not in self:
             return
-        with _patch_argparse_clg(types):
+        with _patch_argparse_clg(args, types):
             clg_args = clg.CommandLine(deepcopy(self.clg)).parse(args[1:])
         self._expand_keys(clg_args)  # Add config from cli args
         del self['clg']  # Remove clg key from Config

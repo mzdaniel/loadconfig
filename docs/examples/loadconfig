@@ -22,7 +22,7 @@ Full documentation:
     pdf:  https://readthedocs.org/projects/loadconfig/downloads
 '''
 
-from loadconfig import Config, set_verprog, __version__
+from loadconfig import Config, __version__
 import sys
 
 conf = """\
@@ -58,8 +58,7 @@ conf = """\
 
 
 def main(args):
-    config = set_verprog(conf, __version__)
-    c = Config(config, args)
+    c = Config(conf, args, version=__version__)
     print(c.export())
 
 if __name__ == '__main__':

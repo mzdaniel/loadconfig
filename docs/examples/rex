@@ -15,7 +15,7 @@ optional arguments:
 Eg:  echo 'This test' | rex '^[Tt]?his (.+)' '\1'
      > test'''
 
-from loadconfig import Config, set_verprog
+from loadconfig import Config
 import re
 import sys
 
@@ -58,8 +58,7 @@ def rex(pattern, replacement, string=''):
 
 
 def main(args):
-    config = set_verprog(conf)
-    c = Config(config, args=sys.argv)
+    c = Config(conf, args)
     ret, st = rex(c.pattern, c.replacement, c.string)
     sys.stdout.write(ret)
     sys.exit(st)
