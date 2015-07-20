@@ -11,6 +11,7 @@ __author__ = 'Daniel Mizyrycki'
 import argparse
 import clg
 from contextlib import contextmanager
+from copy import deepcopy
 import os
 from os import remove
 from os.path import basename, dirname, abspath, exists, isdir, isfile
@@ -315,3 +316,26 @@ def _patch_argparse_clg(args, types):
         argparse.HelpFormatter = argparse_HelpFormatter
         argparse.ArgumentParser._print_message = argparse_print_message
         sys.argv = sys_argv
+
+
+def _clg_parse(clg_key, args, types):
+    '''Parse cli arguments using clg key.
+    types: optional list of custom functions for argument checking.
+    clg_key.default_cmd: optional command if none is passed on the cli args.
+    '''
+    if 'default_cmd' in clg_key:
+        default_cmd = clg_key['default_cmd']
+        del clg_key['default_cmd']
+    with _patch_argparse_clg(args, types), exc(SystemExit) as e:
+        clg_args = clg.CommandLine(deepcopy(clg_key)).parse(args[1:])
+    if e() and hasattr(e(), 'code') and e().code.startswith('usage:') and \
+     'default_cmd' in locals():
+        # Try clg parsing once more with default_cmd
+        new_args = [default_cmd] + args[2:]
+        with _patch_argparse_clg(args, types), exc(SystemExit) as e:
+            clg_args = clg.CommandLine(deepcopy(clg_key)).parse(new_args)
+        if e():
+            raise e()
+    elif e():
+        raise e()
+    return clg_args

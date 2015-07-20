@@ -31,18 +31,17 @@ run and uninstall itself:
 
     from loadconfig import Config
     import sys
-    from textwrap import dedent
 
-    conf = dedent("""\
-                clg:
-                    subparsers:
-                        run:
-                            help: 'run as:  $prog run'
-                        install:
-                            help: 'run as:  $prog install | sudo bash'
-                        uninstall:
-                            help: 'run as:  $prog uninstall | sudo bash'
-                """)
+    conf = """\
+        clg:
+            subparsers:
+                run:
+                    help: 'run as:  $prog run'
+                install:
+                    help: 'run as:  $prog install | sudo bash'
+                uninstall:
+                    help: 'run as:  $prog uninstall | sudo bash'
+        """
 
     def install(c):
         print('cp {} /usr/bin'.format(c.prog))

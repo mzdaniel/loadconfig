@@ -9,12 +9,11 @@ from os.path import dirname, abspath
 import sys
 sys.path.insert(0, dirname(abspath(__file__)))
 
-import clg
 from collections import OrderedDict
 from copy import deepcopy
 from itertools import count
 from lib import (delregex, dfl, findregex, flatten, read_config_file,
-    read_file, _get_option, _patch_argparse_clg)
+    read_file, _clg_parse, _get_option)
 from os import environ
 from py6 import cStringIO, shlex_quote
 from string import Template
@@ -288,7 +287,7 @@ class Config(Odict):
         # Prevent clg seeing -E or -C options
         return delregex('^(-E|-C)=', args)
 
-    def _load_config_cli(self, args, types):
+    def _load_config_cli(self, args, types=set()):
         '''Load config parsing cli arguments with clg.
         clg key config may come from config file, cli arg, or python config.
 
@@ -306,8 +305,7 @@ class Config(Odict):
         '''
         if not args or 'clg' not in self:
             return
-        with _patch_argparse_clg(args, types):
-            clg_args = clg.CommandLine(deepcopy(self.clg)).parse(args[1:])
+        clg_args = _clg_parse(self.clg, args, types)
         self._expand_keys(clg_args)  # Add config from cli args
         del self['clg']  # Remove clg key from Config
 

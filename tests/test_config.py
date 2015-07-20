@@ -288,3 +288,26 @@ def test_functional_verprog(f):
 def test_fail_to_find_config(f):
     c = Config(args=['-C="not_config_e76a41.conf"'])
     assert '{}' == repr(c)
+
+
+def test_default_cmd():
+    conf = """\
+        clg:
+            default_cmd: run
+            subparsers:
+                run:
+                    help: 'run as:  $prog run'
+                install:
+                    help: 'run as:  $prog install | sudo bash'"""
+    c = Config(conf, args=['netapplet.py'])
+    assert 'run' == c.command0
+
+    conf = """\
+        clg:
+            default_cmd: uninstall
+            subparsers:
+                run:
+                    help: 'run as:  $prog run'"""
+    with exc(SystemExit) as e:
+        c = Config(conf, args=['netapplet.py'])
+    assert e().code.startswith('usage:')
