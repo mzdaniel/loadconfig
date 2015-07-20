@@ -3,7 +3,7 @@ from __future__ import print_function
 __all__ = ['Config', 'Odict', '__version__']
 
 __author__ = 'Daniel Mizyrycki'
-__version__ = '0.1b1'
+__version__ = '0.1b2-dev'
 
 from os.path import dirname, abspath
 import sys
