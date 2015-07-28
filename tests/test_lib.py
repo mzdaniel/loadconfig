@@ -1,18 +1,46 @@
 #!/usr/bin/env python
-'''Test Config library
+'''Test loadconfig library
 
 tox is recommented for running this test file.
 For manual run:
     pip install -rtests/test_requirements.txt
     python -m pytest tests/test_lib.py
 '''
-from loadconfig.lib import run
+from loadconfig.lib import Run, run, tempdir
+from loadconfig.py6 import text_type
+from os.path import isfile
+from time import sleep
 
 
-def test_run():
+def test_Run():
+    ret = Run('echo -e "Test Run class\nwith multiline args"', shell=False)
+    assert "Test Run class\nwith multiline args\n" == ret.stdout
+    assert 0 == ret.code
+
+
+def test_Run_context():
+    with tempdir() as tmp, Run('echo hi > ' + tmp + '/test.txt'):
+        with open(tmp + '/test.txt') as fh:
+            assert 'hi\n' == fh.read()
+    assert not isfile(tmp + '/test.txt')
+
+
+def test_Run_context_async():
+    with Run('echo hi', async=True) as proc:
+        assert 'hi\n' == proc.get_output()
+
+
+def test_Run_stop():
+    ret = Run('echo hi; sleep 1000000', async=True)
+    sleep(0.2)
+    ret.stop()
+    assert 'hi\n' == ret.stdout
+
+
+def test_run_inexistent_cmd():
     ret = run('not_script.sh')
-    assert '' == ret.stdout
+    assert isinstance(ret, text_type)
+    assert '' == ret
     assert ret.stderr.startswith('/bin/sh: not_script.sh:')
     assert 127 == ret.code
-    assert 65536 > ret.pid
     assert 127 == ret._r['code']

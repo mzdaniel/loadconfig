@@ -5,7 +5,8 @@ For partial manual run:
     python -m doctest lib.py -v
 '''
 __all__ = ['addpath', 'capture_stream', 'delregex', 'dfl', 'exc', 'findregex',
-    'import_file', 'read_config_file', 'ppath', 'run', 'tempdir', 'tempfile']
+    'import_file', 'read_config_file', 'ppath', 'Run', 'run', 'tempdir',
+    'tempfile']
 __author__ = 'Daniel Mizyrycki'
 
 import argparse
@@ -16,9 +17,11 @@ import os
 from os import remove
 from os.path import basename, dirname, abspath, exists, isdir, isfile
 from pip import get_installed_distributions
-from py6 import cStringIO
+from py6 import PY2, cStringIO, text_type
 import re
+import shlex
 from shutil import rmtree
+from signal import SIGTERM
 from subprocess import Popen, PIPE
 import sys
 from tempfile import mkdtemp, mkstemp
@@ -186,31 +189,77 @@ def read_config_file(config_path):
     return(read_file(config_path))
 
 
-def run(cmd, **kwargs):
-    r'''Execute command cmd. Return stdout, stderr, (ret)code and pid
+class Run(Popen):
+    r'''Simplify Popen API. Add stop method, async parameter and code attrib.
+    stop method and blocking mode (async=False) call communicate.
+    After communicate, stdout and stderr are mutated to strings
+
+    >>> from time import sleep
+    >>> with Run('echo hi; sleep 1000000', async=True) as proc:
+    ...     sleep(0.2)
+    >>> 'hi\n' == proc.stdout
+    True
+    '''
+    def __init__(self, cmd, async=False, **kwargs):
+        kw = dict(kwargs)
+        kw.setdefault('universal_newlines', True)
+        kw.setdefault('stdout', PIPE)
+        kw.setdefault('stderr', PIPE)
+        kw.setdefault('shell', True)
+        kw['preexec_fn'] = os.setsid
+        if not kw['shell'] and isinstance(cmd, (text_type, str)):
+            cmd = shlex.split(cmd)
+        super(Run, self).__init__(cmd, **kw)
+        if async is False:
+            self.get_output()
+
+    def get_output(self):
+        if not isinstance(self.stdout, (text_type, str)):
+            self.stdout, self.stderr = self.communicate()
+            self.code = self.wait()
+            if PY2:  # pragma: no cover
+                self.stdout = unicode(self.stdout)  # noqa
+                self.stderr = unicode(self.stderr)  # noqa
+        return self.stdout
+
+    def stop(self):
+        if not self.poll():
+            with exc(OSError):
+                self.send_signal(SIGTERM)
+        self.get_output()
+
+    def send_signal(self, sig):
+        os.killpg(self.pid, sig)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.stop()
+
+
+class run(text_type):
+    r'''Execute command cmd. kwargs are the same as Popen.
+    Return object is a string object with extra attributes: stdout, stderr and
+    code (Popen.returncode). Note: run subclasses str for convenience and works
+    well in most cases. In a few corner cases, wrapping run with str, like
+    str(run()), might be needed.
+
     >>> ret = run('echo $((1+1))')
-    >>> ret
-    '2\n'
+    >>> '2\n' == ret
+    True
     >>> ret.code
     0
-    >>> ret = run('not_script.sh')
-    >>> ret.stdout, ret.stderr, ret.code, ret.pid
-    ('', '/bin/sh: not_script.sh:...not found\n', 127, ...)
     '''
-    class Ret(str):
-        _r = property(lambda self: self.__dict__)
-    kwargs['universal_newlines'] = kwargs.get('universal_newlines', True)
-    kwargs['stdout'] = kwargs.get('stdout', PIPE)
-    kwargs['stderr'] = kwargs.get('stderr', PIPE)
-    kwargs['shell'] = kwargs.get('shell', True)
-    proc = Popen(cmd, **kwargs)
-    stdout, stderr = proc.communicate()
-    ret = Ret(stdout)
-    ret.stdout = stdout
-    ret.stderr = stderr
-    ret.code = proc.returncode
-    ret.pid = proc.pid
-    return ret
+    def __new__(cls, cmd, **kwargs):
+        proc = Run(cmd, async=False, **kwargs)
+        ret = super(run, cls).__new__(cls, proc.stdout)
+        ret.stdout = proc.stdout
+        ret.stderr = proc.stderr
+        ret.code = proc.returncode
+        return ret
+
+    _r = property(lambda self: self.__dict__)
 
 
 def tempdir(ctx=True):
