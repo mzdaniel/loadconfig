@@ -16,7 +16,6 @@ from copy import deepcopy
 import os
 from os import remove
 from os.path import basename, dirname, abspath, exists, isdir, isfile
-from pip import get_installed_distributions
 from py6 import PY2, cStringIO, text_type
 import re
 import shlex
@@ -327,17 +326,6 @@ def _get_option(option_string):
     value = (option_string[3:] if option_string[3:4] not in ['"', "'"]
         else option_string[4:-1])
     return value, option
-
-
-def _get_version(package):
-    '''Get version from package installer
-
-    >>> from pip import __version__
-    >>> __version__ == _get_version('pip')
-    True
-    '''
-    pkgs = get_installed_distributions()
-    return {e.key: e.version for e in pkgs}.get(package, '')
 
 
 @contextmanager
