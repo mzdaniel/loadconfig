@@ -262,8 +262,9 @@ class run(text_type):
     _r = property(lambda self: self.__dict__)
 
 
-def tempdir(ctx=True):
-    '''Create temporary directory and remove it when used as contextmanager.
+class tempdir(str):
+    '''Create temporary directory. Autoremove it if used as context manager.
+    Tempdir uses same keyword arguments as tempfile.mkdtemp.
 
     >>> with tempdir() as tmpdir:
     ...     isdir(tmpdir)
@@ -272,23 +273,28 @@ def tempdir(ctx=True):
     ...     pass
     >>> isdir(tmpdir)
     False
-    >>> isinstance(tempdir(ctx=False), str)
+    >>> isinstance(tempdir(), str)
     True
     '''
-    @contextmanager
-    def _tempdir():
-        tmpdir = mkdtemp()
-        yield tmpdir
-        rmtree(tmpdir)
+    def __new__(cls, *args, **kwargs):
+        tmpdir = mkdtemp(**kwargs)
+        return super(tempdir, cls).__new__(cls, tmpdir)
 
-    if ctx:
-        return _tempdir()
-    return mkdtemp()
+    def remove(self):
+        rmtree(self)
+
+    def __enter__(self):
+        return str(self)
+
+    def __exit__(self, type, value, traceback):
+        self.remove()
 
 
 @contextmanager
-def tempfile():
+def tempfile(*args, **kwargs):
     '''Create a temporary file, returning its file handle. Remove it on exit.
+    Tempdir uses same keyword arguments as tempfile.mkstemp using text mode by
+    default.
 
     >>> with tempfile() as fh:
     ...    _ = fh.write('Hi there')
@@ -301,9 +307,10 @@ def tempfile():
     >>> isfile(fh.name)
     False
     '''
-    tmpfile_fd, tmpfile = mkstemp()
+    tmpfile_fd, tmpfile = mkstemp(**kwargs)
     os.close(tmpfile_fd)
-    filehandle = open(tmpfile, 'w+')
+    mode = 'wt+' if kwargs.get('text', True) else 'w+'
+    filehandle = open(tmpfile, mode)
     yield filehandle
     filehandle.close()
     remove(tmpfile)
