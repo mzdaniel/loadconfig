@@ -255,7 +255,7 @@ class Config(Odict):
         config_string = str(self)
         n = count()
         while '$' in config_string and next(n) < self.expand_max:
-            config_string = Template(config_string).safe_substitute(self)
+            config_string = self.render(config_string)
             self.update(config_string)
 
     def _load_config_file(self, filepath):
@@ -279,7 +279,7 @@ class Config(Odict):
             config_string, option = _get_option(arg)
             if option == 'C':
                 # Expand $ keys in file name
-                config_string = Template(config_string).safe_substitute(self)
+                config_string = self.render(config_string)
                 config_string = self._load_config_file(config_string)
             if 'prog' not in self and 'clg' in config_string:
                 self.prog = args[0]
@@ -347,6 +347,15 @@ class Config(Odict):
             retval += 'export {}="{}"\n'.format(
                 key.upper().replace(' ', '_'), val)
         return retval[:-1]
+
+    def render(self, template):
+        '''Render a string template
+
+        >>> c = Config('name: Jay')
+        >>> c.render('Good morning $name.')
+        'Good morning Jay.'
+        '''
+        return Template(template).safe_substitute(self)
 
     def run(self, module='__main__'):
         r'''Run selected subparser command.
