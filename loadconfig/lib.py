@@ -378,9 +378,9 @@ def _clg_parse(clg_key, args, types):
     with _patch_argparse_clg(args, types), exc(SystemExit) as e:
         clg_args = clg.CommandLine(deepcopy(clg_key)).parse(args[1:])
     if e() and hasattr(e(), 'code') and e().code.startswith('usage:') and \
-     'default_cmd' in locals():
+     'default_cmd' in locals() and '-h' not in args and '--help' not in args:
         # Try clg parsing once more with default_cmd
-        new_args = [default_cmd] + args[2:]
+        new_args = [default_cmd] + args[1:]
         with _patch_argparse_clg(args, types), exc(SystemExit) as e:
             clg_args = clg.CommandLine(deepcopy(clg_key)).parse(new_args)
         if e():

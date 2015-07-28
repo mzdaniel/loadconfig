@@ -304,6 +304,19 @@ def test_default_cmd():
 
     conf = """\
         clg:
+            default_cmd: run
+            subparsers:
+                run:
+                    help: 'run as:  $prog run'
+                install:
+                    help: 'run as:  $prog install | sudo bash'"""
+
+    with exc(SystemExit) as e:
+        c = Config(conf, args=['netapplet.py', '-help'])
+    assert e().code.startswith('usage:')
+
+    conf = """\
+        clg:
             default_cmd: uninstall
             subparsers:
                 run:
