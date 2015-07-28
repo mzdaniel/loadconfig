@@ -1,6 +1,23 @@
 CHANGES
 =======
 
+0.1
+---
+
+* release 0.1
+* Update clg dependency
+* Simplify package version handling
+* Make tempdir and tempfile library functions more generic
+* Improve handling of default cli command
+* Add new Run Popen subclass that can be used as context manager. Add async
+  mode, handle output as utf-8, improve string splitting when not using
+  subshell and use process sessions to handle subprocesses. Refactor run
+  library function
+* Add Config.render functionality expanding Config in a string
+* Add default command clg keyword. Update tests and docs
+* dev version update
+
+
 0.1b1
 -----
 
@@ -9,6 +26,7 @@ CHANGES
 * Refactor argparse_clg patch to simplify SystemExit interface. Update tests
   and docs
 * Refactor README.rst to make Pypi happy
+
 
 0.0.9
 -----
@@ -24,6 +42,7 @@ CHANGES
 * Improve Pypi classification
 * Get docs version from setup.cfg
 
+
 0.0.8
 -----
 
@@ -34,15 +53,18 @@ CHANGES
   Expand $ keys within -C arguments. Flatten lists on config export. Multiple
   library improvements
 
+
 0.0.7
 -----
 
 * docs: Ensure docs can be built on readthedocs
 
+
 0.0.6
 -----
 
 * Add attribute setting and deletion with tests
+
 
 0.0.5
 -----
