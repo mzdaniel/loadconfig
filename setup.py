@@ -8,7 +8,7 @@ from setuptools import setup
 
 for line in open('loadconfig/__init__.py'):
     if line.startswith('__version__'):
-        version = sub(".+'(.+?)'", r'\1', line)
+        version = sub(".+'(.+?)'\n", r'\1', line)
 
 environ["PBR_VERSION"] = version
 
