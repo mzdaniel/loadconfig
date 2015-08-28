@@ -302,15 +302,6 @@ def test_default_cmd():
     c = Config(conf, args=['netapplet.py'])
     assert 'run' == c.command0
 
-    conf = """\
-        clg:
-            default_cmd: run
-            subparsers:
-                run:
-                    help: 'run as:  $prog run'
-                install:
-                    help: 'run as:  $prog install | sudo bash'"""
-
     with exc(SystemExit) as e:
         c = Config(conf, args=['netapplet.py', '-help'])
     assert e().code.startswith('usage:')
@@ -324,3 +315,34 @@ def test_default_cmd():
     with exc(SystemExit) as e:
         c = Config(conf, args=['netapplet.py'])
     assert e().code.startswith('usage:')
+
+
+def test_run_namespace():
+    conf = """\
+        prog: netapplet.py
+        clg:
+            subparsers:
+                install:
+                    help: 'run as:  $prog install | sudo bash'"""
+
+    class Prog(object):
+        def __init__(self, c):
+            self.__dict__.update(c)
+
+        def install(self):
+            return 'echo "Script lines to install {}."'.format(self.prog)
+
+    # Ensure Prog class is reachable from this module. Equivalent to import
+    #  test.test_config at the begginig of this module
+    lname = __import__(__name__.partition('.')[0])
+    for name in __name__.split('.')[1:]:
+        lname = getattr(lname, name)
+    lname.Prog = Prog
+    c = Config(conf, args=['', 'install'])
+
+    # Assert as a class namespace
+    expected = 'echo "Script lines to install {}."'.format(c.prog)
+    assert expected == c.run(Prog)
+
+    # Assert as string namespace
+    assert expected == c.run(__name__ + '.Prog')

@@ -357,8 +357,11 @@ class Config(Odict):
         '''
         return Template(template).safe_substitute(self)
 
-    def run(self, module='__main__'):
-        r'''Run selected subparser command.
+    def run(self, namespace='__main__'):
+        r'''Run selected subparser command from namespace.
+        Namespace can be full qualified string (eg: package.module.class), a
+        module or a class. Subparser command correspond with either a function
+        or a method from the namespace.
 
         >>> conf = Config("""
         ...            prog: netapplet.py
@@ -370,14 +373,19 @@ class Config(Odict):
         ...     print('echo "Installation shell script lines for {}."'.format(
         ...         c.prog))
         >>> # Ensure install function is reachable
-        >>> sys.modules[__name__].install = install
+        >>> __import__(__name__).install = install
         >>> c = Config(conf, args=['', 'install'])
         >>> c.run(__name__)
         echo "Installation shell script lines for netapplet.py."
         '''
-        if isinstance(module, str):
-            module = sys.modules[module]
-        getattr(module, str(self.command0))(self)
+        if isinstance(namespace, str):  # rename namespace with its last name
+            lname = __import__(namespace.partition('.')[0])
+            for name in namespace.split('.')[1:]:
+                lname = getattr(lname, name)
+            namespace = lname
+        if isinstance(namespace, type):  # namespace is a class
+            return getattr(namespace(self), str(self.command0))()
+        return getattr(namespace, str(self.command0))(self)
 
     def __repr__(self):
         return repr(Odict(self))
