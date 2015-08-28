@@ -347,6 +347,19 @@ def tempfile(*args, **kwargs):
     remove(tmpfile)
 
 
+def write_file(file_path, data):
+    '''Write data to file. Return True on success
+
+    >>> with tempfile() as fh:
+    ...     fh.close()
+    ...     assert write_file(fh.name, 'Hi there')
+    ...     assert 'Hi there' == read_file(fh.name)
+    '''
+    with exc(IOError) as e, open(file_path, 'w') as fh:
+        fh.write(data)
+    return not bool(e())
+
+
 def _get_option(option_string):
     '''Get the value and option letter of an argument
 
