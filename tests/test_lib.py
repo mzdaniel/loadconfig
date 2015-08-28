@@ -6,7 +6,7 @@ For manual run:
     pip install -rtests/test_requirements.txt
     python -m pytest tests/test_lib.py
 '''
-from loadconfig.lib import Run, run, tempdir
+from loadconfig.lib import exc, last, Run, run, tempdir
 from loadconfig.py6 import text_type
 from os.path import isfile
 from time import sleep
@@ -44,3 +44,20 @@ def test_run_inexistent_cmd():
     assert ret.stderr.startswith('/bin/sh: not_script.sh:')
     assert 127 == ret.code
     assert 127 == ret._r['code']
+
+
+def test_Run_unicode():
+    '''Test unicode is handled properly'''
+    with exc(UnicodeDecodeError) as e:
+        Run("echo -e '\xe2'")
+    assert not e()
+
+
+def test_exc():
+    with exc() as e:
+        0 / 0
+    assert isinstance(e(), ZeroDivisionError)
+
+
+def test_last():
+    assert None is last([])

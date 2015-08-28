@@ -11,12 +11,13 @@ __author__ = 'Daniel Mizyrycki'
 
 import argparse
 import clg
+from collections import deque
 from contextlib import contextmanager
 from copy import deepcopy
 import os
 from os import remove
 from os.path import basename, dirname, abspath, exists, isdir, isfile
-from py6 import PY2, cStringIO, text_type
+from py6 import cStringIO, text_type
 import re
 import shlex
 from shutil import rmtree
@@ -102,28 +103,30 @@ def dfl(value, dfl=''):
     return value if value not in [None, ''] else dfl
 
 
-def first(l):
-    '''Get first element of a list or generator. Return None if empty.
+def first(it):
+    '''Get first element of an iterator. Return None if empty.
 
     >>> first([1,2,3])
     1
     '''
-    return next(iter(l), None)
+    return next(iter(it), None)
 
 
 @contextmanager
-def exc(exception=BaseException):
+def exc(*exceptions):
     '''Swallow exceptions
 
     >>> with exc(ZeroDivisionError) as e:
-    ...     0/0
+    ...     0 / 0
     >>> isinstance(e(), ZeroDivisionError)
     True
     '''
+    if not exceptions:
+        exceptions = BaseException
     try:
         e = None
         yield lambda: e
-    except BaseException as ex:
+    except exceptions as ex:
         e = ex
 
 
@@ -167,6 +170,18 @@ def import_file(filepath):
     return module
 
 
+def last(it):
+    '''Get last element of an iterator. Return None if empty.
+
+    >>> last([1,3,7])
+    7
+    '''
+    try:
+        return deque(it, maxlen=1).pop()
+    except IndexError:
+        return None
+
+
 def ppath(path):
     '''Get absolute parent path.
     >>> os.chdir('/var/tmp')
@@ -186,6 +201,26 @@ def read_config_file(config_path):
     if isdir(config_path):
         config_path = '{}/config.conf'.format(config_path)
     return(read_file(config_path))
+
+
+class Ret(text_type):
+    r'''Return class.
+    arg[0] is the string value for the Ret object.
+    kwargs are feed as attributes.
+
+    >>> ret = Ret('OK', code=0)
+    >>> ret == 'OK'
+    True
+    >>> ret.code
+    0
+    '''
+    def __new__(cls, string, **kwargs):
+        ret = super(Ret, cls).__new__(cls, text_type(string))
+        for k in kwargs:
+            setattr(ret, k, kwargs[k])
+        return ret
+
+    _r = property(lambda self: self.__dict__)
 
 
 class Run(Popen):
@@ -216,9 +251,6 @@ class Run(Popen):
         if not isinstance(self.stdout, (text_type, str)):
             self.stdout, self.stderr = self.communicate()
             self.code = self.wait()
-            if PY2:  # pragma: no cover
-                self.stdout = unicode(self.stdout)  # noqa
-                self.stderr = unicode(self.stderr)  # noqa
         return self.stdout
 
     def stop(self):
