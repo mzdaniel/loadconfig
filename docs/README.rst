@@ -153,6 +153,7 @@ Thanks!
 =======
 
 * `Guido van Rossum`_ and `Linus Torvalds`_
+* Raymond Hettinger and Armin Ronacher for `OrderedDict`_
 * Clark Evans and Kirill Simonov for `YAML`_ and `PyYAML`_ implementation
 * Steven Bethard and François Ménabé for `argparse`_ and `CLG`_ implementations
 * David Goodger & Georg Brandl for `reStructuredText`_ and `Sphinx`_
@@ -164,6 +165,7 @@ Thanks!
 .. _Linus Torvalds: http://en.wikipedia.org/wiki/Linus_Torvalds
 .. _yaml: http://yaml.org/spec/1.2/spec.html
 .. _pyyaml: http://pyyaml.org/wiki/PyYAMLDocumentation
+.. _OrderedDict: https://www.python.org/dev/peps/pep-0372
 .. _argparse: https://docs.python.org/3/library/argparse.html
 .. _CLG: https://clg.readthedocs.org
 .. _docker: https://www.docker.com/

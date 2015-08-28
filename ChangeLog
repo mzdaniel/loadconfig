@@ -1,6 +1,17 @@
 CHANGES
 =======
 
+0.1.1
+-----
+
+* release 0.1.1
+* Add library write_file
+* Add namespaces to Config.run
+* Improve library exc and add last and Ret. Add tests and cleanup
+* Improve version parsing
+* dev version update
+
+
 0.1
 ---
 
