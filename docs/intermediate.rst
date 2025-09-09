@@ -253,8 +253,8 @@ The following lines shows the same snippet for python. Lets play with clg:
     >>> try:
     ...     c = Config(conf, args=['sysbuild', '--help'])
     ... except SystemExit as e:
-    ...     pass
-    >>> print(e.code)
+    ...     exc = e
+    >>> print(exc.code)
     usage: sysbuild [-h] host
     <BLANKLINE>
     Build a full system
@@ -262,7 +262,7 @@ The following lines shows the same snippet for python. Lets play with clg:
     positional arguments:
       host        Host to build
     <BLANKLINE>
-    optional arguments:
+    options:
       -h, --help  show this help message and exit
 
 And putting the 'conf' in action:
@@ -318,7 +318,7 @@ used to render and browse this very documentation in real time::
 
     optional arguments:
       -h, --help     show this help message and exit
-      -v, --version  show program's version number and exit
+      -v, --version  show program\'s version number and exit
       -d, --debug    show docker call
 
     Build sphinx docs, launch a browser for easy reading,

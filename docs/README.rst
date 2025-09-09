@@ -5,15 +5,9 @@ loadconfig
 .. image:: https://readthedocs.org/projects/loadconfig/badge/?version=master
     :target: http://loadconfig.readthedocs.org/en/master
     :alt: [Docs]
-.. image:: https://img.shields.io/badge/buildbot-status-blue.jpg
-    :target: http://loadconfig.glidelink.net
-    :alt: [Build tests]
-.. image:: https://img.shields.io/badge/github-repo-yellowgreen.jpg
-    :target: https://github.com/mzdaniel/loadconfig
-    :alt: [Code repo]
-.. image:: https://img.shields.io/pypi/v/loadconfig.jpg
-    :target: https://pypi.python.org/pypi/loadconfig
-    :alt: [Pypi package]
+.. image:: https://github.com/mzdaniel/loadconfig/actions/workflows/runtests.yml/badge.svg
+    :target: https://github.com/mzdaniel/loadconfig/actions/workflows/runtests.yml
+    :alt: [Tests]
 
 
 loadconfig is a tool to simplify configuration management
@@ -75,8 +69,7 @@ Alternatively, install from github::
 Local test/build
 ================
 
-Assumptions for this section: A unix system, python2.7 or 3.4, and pip >= 6.1.
-Although git is recommended, it is not required.
+Assumptions for this section: A unix system, python >= 3.11, and pip >= 24.3
 
 loadconfig is hosted on github:
 
@@ -93,51 +86,45 @@ loadconfig is hosted on github:
 For a simple way to run the tests with minimum dependencies, tests/runtests.sh
 is provided.
 Note: python programs and libraries depend on the environment where it is run.
-At a minimun, it is adviced to run the tests and build process in a virtualenv.
-tox is the recommended way to run loadconfig tests and build its package:
+At a minimun, it is adviced to run the tests and build process in a venv.
+loadconfig tests are exhaustive and also tests described in the documentation
+are exercised to have confidence loadconfig code is as reliable as posible.
 
 .. code-block:: bash
 
-
-    # Install loadconfig dependencies and pytest
-    pip install -r requirements.txt pytest
+    # Install loadconfig dependencies plus ruff and pytest with coverage
+    python -m venv build/venv
+    source build/venv/bin/activate
+    pip install clg pyyaml ruff pytest-cov
 
     # Run the tests
-    ./tests/runtests.sh
+    ruff check
+    pytest
 
-For building a universal pip installable wheel, pbr is used:
-
-.. code-block:: bash
-
-
-    # Install setup.py dependencies if needed.
-    pip install pbr wheel
-
-    # Build loadconfig package
-    python setup.py bdist_wheel
-
-We use tox to test loadconfig in virtualenvs for both python2.7 and python3.4.
-`Tox`_ is a generic virtualenv management and test command line tool. It
-handles the creation of virtualenvs with proper python dependencies for
-testing, pep8 checking, coverage and building:
+Building loadconfig pip installable wheel is as easy as:
 
 .. code-block:: bash
 
+    pip wheel -w build/wheel .
 
-    # Install the only tox dependency if needed (tox takes care of any other
-    # needed dependency using pip)
-    pip install tox
+Although rust-just, uv and git are used in this project for performance
+and organizational tasks, at this point it's most effective to stick
+with our familiar pip and venv.
 
-    # Run tests, create coverage report and build universal loadconfig package
-    # loadconfig package is left in dist/
-    tox
+To test and build loadconfig documentation, the following can be added
+to the venv:
 
-If you are curious, `loadconfig buildbot`_ continuos integration server shows
-the tox tests and build runs for each commit and pull requests done in the
-loadconfig repo.
+.. code-block:: bash
 
-.. _tox: http://tox.readthedocs.org
-.. _loadconfig buildbot: http://loadconfig.glidelink.net/waterfall
+    pip install sphinx sphinx_bootstrap_theme
+    sphinx-build -E -d build/.doctrees -b doctest docs build/html
+    sphinx-build -E -d build/.doctrees docs build/html
+
+
+If you are curious, since loadconfig 0.1.2, `github actions CI`_ continuos integration
+server shows the test runs for each commit and pull requests done in the loadconfig repo.
+
+.. _github actions CI: https://github.com/mzdaniel/loadconfig/actions/workflows/runtests.yml
 
 
 Security

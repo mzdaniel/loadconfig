@@ -3,7 +3,7 @@ from __future__ import print_function
 __all__ = ['Config', 'Odict', '__version__']
 
 __author__ = 'Daniel Mizyrycki'
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 from os.path import dirname, abspath
 import sys
@@ -15,7 +15,8 @@ from itertools import count
 from lib import (delregex, dfl, findregex, flatten, read_config_file,
     read_file, _clg_parse, _get_option)
 from os import environ
-from py6 import cStringIO, shlex_quote
+from io import StringIO
+from shlex import quote as shlex_quote
 from string import Template
 import yaml
 from yaml.scanner import ScannerError
@@ -78,8 +79,6 @@ class Odict(OrderedDict):
         '''
         if name in self:
             return self[name]
-        if name in ['_OrderedDict__root', '__deepcopy__']:
-            return super(Odict, self).__getattr__(name)
 
     def __delattr__(self, name):
         '''Delete Odict key from attribute
@@ -98,9 +97,6 @@ class Odict(OrderedDict):
         >>> c
         {activity: [hike, scuba dive], place: Hawaii}
         '''
-        if name in ['_OrderedDict__root', '_OrderedDict__hardroot',
-         '_OrderedDict__map']:
-            return super(Odict, self).__setattr__(name, value)
         self[name] = value
 
     def __str__(self):
@@ -183,7 +179,7 @@ class Odict(OrderedDict):
             def increase_indent(self, flow=False, indentless=False):
                 return super(Dumper, self).increase_indent(flow, False)
 
-        stream = cStringIO()
+        stream = StringIO()
         yaml.dump(self, stream, Dumper, default_flow_style=default_flow_style)
         return stream.getvalue()[:-1]
 

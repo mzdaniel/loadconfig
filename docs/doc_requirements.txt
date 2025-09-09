@@ -1,4 +1,0 @@
-unittest2==1.0.1
-sphinx==1.2.3
-sphinx_bootstrap_theme==0.4.5
-rst2pdf==0.93

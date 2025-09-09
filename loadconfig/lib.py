@@ -17,7 +17,7 @@ from copy import deepcopy
 import os
 from os import remove
 from os.path import basename, dirname, abspath, exists, isdir, isfile
-from py6 import cStringIO, text_type
+from io import StringIO
 import re
 import shlex
 from shutil import rmtree
@@ -74,7 +74,7 @@ def capture_stream(stream_name='stdout'):
     'Hi there\n'
     '''
     stream = getattr(sys, stream_name)
-    data = cStringIO()
+    data = StringIO()
     setattr(sys, stream_name, data)
     yield data
     setattr(sys, stream_name, stream)
@@ -203,7 +203,7 @@ def read_config_file(config_path):
     return(read_file(config_path))
 
 
-class Ret(text_type):
+class Ret(str):
     r'''Return class.
     arg[0] is the string value for the Ret object.
     kwargs are feed as attributes.
@@ -215,7 +215,7 @@ class Ret(text_type):
     0
     '''
     def __new__(cls, string, **kwargs):
-        ret = super(Ret, cls).__new__(cls, text_type(string))
+        ret = super(Ret, cls).__new__(cls, str(string))
         for k in kwargs:
             setattr(ret, k, kwargs[k])
         return ret
@@ -224,31 +224,31 @@ class Ret(text_type):
 
 
 class Run(Popen):
-    r'''Simplify Popen API. Add stop method, async parameter and code attrib.
-    stop method and blocking mode (async=False) call communicate.
+    r'''Simplify Popen API. Add stop method, asyn parameter and code attrib.
+    stop method and blocking mode (asyn=False) call communicate.
     After communicate, stdout and stderr are mutated to strings
 
     >>> from time import sleep
-    >>> with Run('echo hi; sleep 1000000', async=True) as proc:
+    >>> with Run('echo hi; sleep 1000000', asyn=True) as proc:
     ...     sleep(0.2)
     >>> 'hi\n' == proc.stdout
     True
     '''
-    def __init__(self, cmd, async=False, **kwargs):
+    def __init__(self, cmd, asyn=False, **kwargs):
         kw = dict(kwargs)
         kw.setdefault('universal_newlines', True)
         kw.setdefault('stdout', PIPE)
         kw.setdefault('stderr', PIPE)
         kw.setdefault('shell', True)
         kw['preexec_fn'] = os.setsid
-        if not kw['shell'] and isinstance(cmd, (text_type, str)):
+        if not kw['shell'] and isinstance(cmd, (str, str)):
             cmd = shlex.split(cmd)
         super(Run, self).__init__(cmd, **kw)
-        if async is False:
+        if asyn is False:
             self.get_output()
 
     def get_output(self):
-        if not isinstance(self.stdout, (text_type, str)):
+        if not isinstance(self.stdout, (str, str)):
             self.stdout, self.stderr = self.communicate()
             self.code = self.wait()
         return self.stdout
@@ -269,7 +269,7 @@ class Run(Popen):
         self.stop()
 
 
-class run(text_type):
+class run(str):
     r'''Execute command cmd. kwargs are the same as Popen.
     Return object is a string object with extra attributes: stdout, stderr and
     code (Popen.returncode). Note: run subclasses str for convenience and works
@@ -283,7 +283,7 @@ class run(text_type):
     0
     '''
     def __new__(cls, cmd, **kwargs):
-        proc = Run(cmd, async=False, **kwargs)
+        proc = Run(cmd, asyn=False, **kwargs)
         ret = super(run, cls).__new__(cls, proc.stdout)
         ret.stdout = proc.stdout
         ret.stderr = proc.stderr
@@ -366,7 +366,7 @@ def _get_option(option_string):
     >>> _get_option("-C='/data/conf/build.conf'")
     ('/data/conf/build.conf', 'C')
     '''
-    assert re.search('^-\w', option_string)
+    assert re.search(r'^-\w', option_string)
     option = option_string[1]
     value = (option_string[3:] if option_string[3:4] not in ['"', "'"]
         else option_string[4:-1])

@@ -50,7 +50,7 @@ def c(request):
                         help: extra arguments
             checkconfig: |
                 import re
-                if re.search('[^\d\w]', '$host'):
+                if re.search(r'[^\\d\\w]', '$host'):
                     raise Exception()
 
             system_path:       /data/salt/system

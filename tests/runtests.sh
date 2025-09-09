@@ -3,11 +3,20 @@
 set -e
 cd $(dirname $0)/..
 
-# Use tox if installed.
-if [ $(which tox 2>/dev/null) ]; then
-    tox
+# Use rust-just if installed.
+if which just >/dev/null 2>&1 && which uv >/dev/null 2>&1; then
+    just test
     exit $?; fi
 
+# Ensure loadconfig dependencies are in place
+if ! pip show -q clg || ! pip show -q pyyaml; then
+    echo "Error: loadconfig clg and/or pyyaml dependencies are missing"; exit 1; fi
+
+# Ensure pytest test dependency is in place
+if ! pip show -q pytest || ! pip show -q pytest-cov; then
+    echo "Error: pytest and/or pytest-cov are missing"; exit 1; fi
+
 # This section is provided for convenience of minimun requirements.
-# tox is the recommended way to run tests.
-py.test -sv --doctest-modules --ignore=setup.py
+# rust-just is the recommended way to run tests as it does linting,
+# and test documentation is consistent with the code.
+pytest

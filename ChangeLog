@@ -1,6 +1,21 @@
 CHANGES
 =======
 
+0.1.2
+-----
+
+* Upgrade to python3.11 deprecating all previous versions
+* Upgrade clg, sphinx and switch to sphinx-simplepdf and ruff
+* Fully switch to widely accepted pyproject.toml for project
+  testing and building, and simplify versioning management
+* Make package building as easy as `pip wheel .`
+* Fully replace tox with rust-just and uv for testing and
+  build speedup
+* Cleanup deprecated cruft (setup.py, requirements.txt, etc)
+* Remove Odict stale code discovered by coverage testing
+* Add github actions CI for testing
+
+
 0.1.1
 -----
 

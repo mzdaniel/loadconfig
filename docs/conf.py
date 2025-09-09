@@ -1,10 +1,7 @@
 """documentation config"""
 import sys
 sys.path.append('..')
-try:
-    from loadconfig import __version__
-except Exception:
-    __version__ = ''
+from loadconfig import __version__ as version
 
 try:
     import sphinx_bootstrap_theme
@@ -18,14 +15,13 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'documentation'
-copyright = '2015, Daniel Mizyrycki'
+project = 'loadconfig'
+copyright = '2015-2025, Daniel Mizyrycki'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
-version = __version__
-release = __version__
+release = '2'
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -33,13 +29,12 @@ pygments_style = 'sphinx'
 extensions = ['sphinx.ext.doctest']
 
 try:
-    import rst2pdf  # noqa
-    extensions += ['rst2pdf.pdfbuilder']
+    import rst2pdf
+    extensions += ['sphinx_simplepdf']
+    simplepdf_vars = {'cover-bg':'#5080b0'}
 except ImportError as e:
     pass
 
-pdf_documents = [('index', 'loadconfig', 'loadconfig docs',
-    'Daniel Mizyrycki')]
 
 # Use bootstrap theme if available. Assumed readthedocs otherwise
 if 'sphinx_bootstrap_theme' in locals():

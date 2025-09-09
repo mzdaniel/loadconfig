@@ -1,0 +1,46 @@
+# Build wheel package with:  pip wheel -w dist .
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name  = "loadconfig"
+dynamic = ["version"]
+description = "Tool to simplify config management in a program"
+authors = [{name="Daniel Mizyrycki", email="mzdaniel@glidelink.net"}]
+readme = "README.rst"
+requires-python = ">= 3.11"
+dependencies = ["clg>=3.3", "PyYAML>=6.0.2"]
+keywords = ["config", "yaml", "clg", "command-line", "argparse"]
+license = "MIT"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Utilities",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Operating System :: POSIX",
+    "Operating System :: Unix"]
+
+[project.urls]
+Homepage = "https://loadconfig.readthedocs.org"
+Repository = "https://github.com/loadconfig"
+
+[tool.setuptools]
+packages = ["loadconfig"]
+script-files = ["scripts/loadconfig"]
+
+[tool.setuptools.dynamic]
+version = {attr = 'loadconfig.__version__'}
+
+[tool.ruff.lint]
+exclude = ["docs/conf.py"]
+ignore = ["E113", "E402", "E741"]
+
+[tool.pytest.ini_options]
+addopts = "-sv --ignore=docs/conf.py --ignore=tests/fixtures/demoscript.py --doctest-modules --doctest-glob='*.py' --doctest-glob='*rst' --cov=loadconfig --cov=tests --cov-report=term-missing"

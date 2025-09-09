@@ -45,8 +45,8 @@ def f(request):
                         help: extra arguments
             checkconfig: |
                 import re
-                if re.search('[^\d\w]', '$host'):
-                    raise Exception('Valid chars are [\d\w]. hostname: $host')
+                if re.search(r'[^\\d\\w]', '$host'):
+                    raise Exception(r'Valid chars are [\\d\\w]. hostname: $host')
 
             system_path:        /data/salt/system
             data_file:          $data_path/data.txt
@@ -224,7 +224,7 @@ def test_help(f):
         Config(args=[f.prog, '-h', '-E="{}"'.format(f.conf)],
             version=f.version, types={basename})
     exp = dedent('''\
-        usage: dbuild [-h] [-v] [-e EXTRA_CONFIG] host [args [args ...]]
+        usage: dbuild [-h] [-v] [-e EXTRA_CONFIG] host [args ...]
 
         Build a full system
 
@@ -232,7 +232,7 @@ def test_help(f):
           host                  Host to build
           args                  extra arguments
 
-        optional arguments:
+        options:
           -h, --help            show this help message and exit
           -v, --version         show program's version number and exit
           -e EXTRA_CONFIG, --extra-config EXTRA_CONFIG''')
@@ -303,7 +303,7 @@ def test_default_cmd():
     assert 'run' == c.command0
 
     with exc(SystemExit) as e:
-        c = Config(conf, args=['netapplet.py', '-help'])
+        c = Config(conf, args=['netapplet.py', '--help'])
     assert e().code.startswith('usage:')
 
     conf = """\
