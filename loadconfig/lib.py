@@ -1,6 +1,6 @@
 '''loadconfig library helpers
 
-tox is recommented for testing this file.
+pytest is recommented for testing this file.
 For partial manual run:
     python -m doctest lib.py -v
 '''
@@ -15,7 +15,7 @@ from collections import deque
 from contextlib import contextmanager
 from copy import deepcopy
 import os
-from os import remove
+from os import remove, environ
 from os.path import basename, dirname, abspath, exists, isdir, isfile
 from io import StringIO
 import re
@@ -26,6 +26,9 @@ from subprocess import Popen, PIPE
 import sys
 from tempfile import mkdtemp, mkstemp
 from types import ModuleType
+import yaml
+
+MAPPING_TAG = yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG
 
 
 def addpath(path, parent=False):
@@ -428,3 +431,167 @@ def _clg_parse(clg_key, args, types):
     elif e():
         raise e()
     return clg_args
+
+
+class Odict(dict):
+    r'''Add more readable representation to OrderedDict using yaml.
+
+    >>> d = Odict('{a: 1, b: {c: 3}}')
+    >>> repr(d)
+    '{a: 1, b: {c: 3}}'
+    >>> str(d)
+    'a: 1\nb:\n  c: 3'
+    >>> d == Odict(d)
+    True
+    >>> d.b.c
+    3
+    >>> d._p
+    a: 1
+    b:
+      c: 3
+    '''
+    def __init__(self, *args, **kwargs):
+        '''Process first argument as yaml if it is a string'''
+        args = self._process_args(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+
+    def _process_args(self, *args, **kwargs):
+        if len(args) == 1 and isinstance(args[0], str):
+            try:
+                pair_list = self.load(args[0])
+            except yaml.scanner.ScannerError:
+                # Yaml needs {} on multi-key single-line strings
+                pair_list = self.load('{{{}}}'.format(args[0]))
+            args = [pair_list] if pair_list else []
+        return args
+
+    def update(self, *args, **kwargs):
+        '''Add yaml string as posible argument
+
+        >>> d = Odict('hi: there')
+        >>> d.hi
+        'there'
+        >>> d.update({'hi': 'Liss'})
+        >>> d.hi
+        'Liss'
+        '''
+        args = self._process_args(*args, **kwargs)
+        super().update(*args, **kwargs)
+        # Remove '_' key possible used by include
+        if '_' in self:
+            del self['_']
+
+    def __getattr__(self, name):
+        '''Access Odict key as attribute
+
+        >>> c = Odict('activity: [hike, bike, scuba dive, run]')
+        >>> c.activity
+        ['hike', 'bike', 'scuba dive', 'run']
+        '''
+        if name in self:
+            return self[name]
+
+    def __delattr__(self, name):
+        '''Delete Odict key from attribute
+        >>> c = Odict('activity: [hike, bike, scuba dive, run]')
+        >>> del c.activity
+        >>> c
+        {}
+        '''
+        del self[name]
+
+    def __setattr__(self, name, value):
+        '''Set Odict key from attribute
+
+        >>> c = Odict('activity: [hike, scuba dive]')
+        >>> c.place = 'Hawaii'
+        >>> c
+        {activity: [hike, scuba dive], place: Hawaii}
+        '''
+        self[name] = value
+
+    def __str__(self):
+        return Odict.dump(self, False)
+
+    def __repr__(self):
+        return Odict.dump(self)
+
+    # Convenient shortcuts
+    _r = property(__repr__)
+    _s = property(__str__)
+    _p = property(lambda x: print(str(x)))
+
+
+    @staticmethod
+    def load(yaml_string):
+        '''Return pair list from a yaml string'''
+        return yaml.load(yaml_string, Loader)
+
+    @staticmethod
+    def dump(yaml_string, default_flow_style=True):
+        '''Serialize odict into yaml string'''
+        stream = StringIO()
+        yaml.dump(yaml_string, stream, Dumper,
+            default_flow_style=default_flow_style)
+        return stream.getvalue()[:-1]
+
+
+class Loader(yaml.SafeLoader):
+    def __init__(self, yaml_string):
+        self._root = ''
+        super().__init__(yaml_string)
+        self.add_constructor(MAPPING_TAG, self.odict_mapping)
+        self.add_constructor('!env', self.env)
+        self.add_constructor('!read', self.read)
+        self.add_constructor('!include', self.include)
+        self.add_constructor('!expand', self.expand)
+
+    def env(self, safeloader, node):
+        node = self.construct_scalar(node)
+        if node.upper() in environ:
+            return {node: environ[node.upper()]}
+        return {node: ''}
+
+    def read(self, safeloader, node):
+        node = self.construct_scalar(node)
+        return read_file(node)
+
+    def include(self, safeloader, node):
+        node = self.construct_scalar(node)
+        filepath, sep, key = node.partition(':')
+        self._root = yaml.load(read_file(filepath), Loader)
+        return self.subkey(key)
+
+    def expand(self, safeloader, node):
+        key = self.construct_scalar(node)
+        self._root = safeloader._root
+        return self.subkey(key)
+
+    def subkey(self, key):
+        if not self._root:
+            return ''
+        data = deepcopy(self._root)
+        if key == '&':
+            return ''
+        for k in key.split(':'):
+            if not k:
+                return data
+            data = data.get(k)
+            if data is None:
+                return ''
+        return data
+
+    def odict_mapping(self, safeloader, node):
+        safeloader.flatten_mapping(node)
+        return Odict(safeloader.construct_pairs(node))
+
+
+class Dumper(yaml.SafeDumper):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ignore_aliases = lambda self: True
+        self.add_representer(Odict, lambda self, data:
+            self.represent_dict(data.items()))
+
+    def increase_indent(self, flow=False, indentless=False):
+        return super().increase_indent(flow, False)

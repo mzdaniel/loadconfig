@@ -1,20 +1,15 @@
 #!/usr/bin/env python
 '''Test Config class
 
-tox is recommented for running this test file.
+pytest is recommented for running this test file.
 For manual run:
-    pip install -rtests/test_requirements.txt
-    python -m pytest tests/test_odict.py
+    pip install pytest pytest-cov pyyaml clg
+    pytest tests/test_odict.py
 '''
 from os import environ
-from os.path import dirname, abspath
-import sys
-sys.path.insert(0, dirname(abspath(__file__)))
-from loadconfig.lib import addpath
-addpath(__file__, parent=True)
-
 from loadconfig import Config, Odict
 from loadconfig.lib import tempfile
+from yaml import safe_load
 
 
 def test_list_substitution():
@@ -26,6 +21,26 @@ def test_list_substitution():
               *dancer
             ''')
     assert '{name: [Zeela, Kim], team: [Zeela, Kim]}' == repr(d)
+
+
+def test_set():
+    '''Verify Odict builds sets'''
+    d = Odict("dancers: !!set {'Zeela', 'Kim'}")
+    assert isinstance(d.dancers, set)
+    assert ['Kim', 'Zeela'] == sorted(d.dancers)
+
+
+def test_load_set():
+    '''Verify Odict builds equivalent objects to YAML safe_load !!set'''
+    yaml_string = '''
+        app:
+            option:
+                default: !!set {}
+        '''
+    expected_object = {'app': {'option': {'default': set()}}}
+    safe_loaded = safe_load(yaml_string)
+    assert safe_loaded == expected_object, "ordinary safe_load loads !!set"
+    assert Odict(yaml_string) == expected_object, "ODict loads !!set"
 
 
 def test_unexistent_include_config():

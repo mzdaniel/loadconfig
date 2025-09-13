@@ -5,183 +5,11 @@ __all__ = ['Config', 'Odict', '__version__']
 __author__ = 'Daniel Mizyrycki'
 __version__ = '0.1.2'
 
-from os.path import dirname, abspath
-import sys
-sys.path.insert(0, dirname(abspath(__file__)))
-
-from collections import OrderedDict
-from copy import deepcopy
 from itertools import count
-from lib import (delregex, dfl, findregex, flatten, read_config_file,
-    read_file, _clg_parse, _get_option)
-from os import environ
-from io import StringIO
+from .lib import (Odict, delregex, dfl, findregex, flatten,
+    read_config_file, _clg_parse, _get_option)
 from shlex import quote as shlex_quote
 from string import Template
-import yaml
-from yaml.scanner import ScannerError
-
-
-class Odict(OrderedDict):
-    r'''Add more readable representation to OrderedDict using yaml.
-
-    >>> d = Odict('{a: 1, b: {c: 3}}')
-    >>> repr(d)
-    '{a: 1, b: {c: 3}}'
-    >>> str(d)
-    'a: 1\nb:\n  c: 3'
-    >>> d == Odict(d)
-    True
-    >>> d.b.c
-    3
-    >>> d._p
-    a: 1
-    b:
-      c: 3
-    '''
-    def __init__(self, *args, **kwargs):
-        '''Process first argument as yaml if it is a string'''
-        args = self._process_args(*args, **kwargs)
-        super(Odict, self).__init__(*args, **kwargs)
-
-    def _process_args(self, *args, **kwargs):
-        if len(args) == 1 and isinstance(args[0], str):
-            try:
-                pair_list = self.load(args[0])
-            except ScannerError:
-                # Yaml needs {} on multi-key single-line strings
-                pair_list = self.load('{{{}}}'.format(args[0]))
-            args = [pair_list] if pair_list else []
-        return args
-
-    def update(self, *args, **kwargs):
-        '''Add yaml string as posible argument
-
-        >>> d = Odict('hi: there')
-        >>> d.hi
-        'there'
-        >>> d.update({'hi': 'Liss'})
-        >>> d.hi
-        'Liss'
-        '''
-        args = self._process_args(*args, **kwargs)
-        super(Odict, self).update(*args, **kwargs)
-        # Remove '_' key possible used by include
-        if '_' in self:
-            del self['_']
-
-    def __getattr__(self, name):
-        '''Access Odict key as attribute
-
-        >>> c = Config('activity: [hike, bike, scuba dive, run]')
-        >>> c.activity
-        ['hike', 'bike', 'scuba dive', 'run']
-        '''
-        if name in self:
-            return self[name]
-
-    def __delattr__(self, name):
-        '''Delete Odict key from attribute
-        >>> c = Config('activity: [hike, bike, scuba dive, run]')
-        >>> del c.activity
-        >>> c
-        {}
-        '''
-        del self[name]
-
-    def __setattr__(self, name, value):
-        '''Set Odict key from attribute
-
-        >>> c = Config('activity: [hike, scuba dive]')
-        >>> c.place = 'Hawaii'
-        >>> c
-        {activity: [hike, scuba dive], place: Hawaii}
-        '''
-        self[name] = value
-
-    def __str__(self):
-        return Odict.dump(self, False)
-
-    def __repr__(self):
-        return Odict.dump(self)
-
-    # Convenient shortcuts
-    _r = property(__repr__)
-    _s = property(__str__)
-    _p = property(lambda x: print(str(x)))
-
-    @staticmethod
-    def load(yaml_string):
-        '''Return pair list from a yaml string'''
-        class Loader(yaml.SafeLoader):
-            yaml_mapping = yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG
-            _data = ''
-
-            def __init__(self, *args, **kwargs):
-                super(Loader, self).__init__(*args, **kwargs)
-                self.add_constructor(self.yaml_mapping, self.construct_mapping)
-                self.add_constructor('!env', self.env)
-                self.add_constructor('!read', self.read)
-                self.add_constructor('!include', self.include)
-                self.add_constructor('!expand', self.expand)
-
-            def env(self, safeloader, node):
-                node = self.construct_scalar(node)
-                if node.upper() in environ:
-                    return {node: environ[node.upper()]}
-                return {node: ''}
-
-            def read(self, safeloader, node):
-                node = self.construct_scalar(node)
-                return read_file(node)
-
-            def include(self, safeloader, node):
-                node = self.construct_scalar(node)
-                filepath, sep, key = node.partition(':')
-                self._data = yaml.load(read_file(filepath), Loader)
-                return self.subkey(key)
-
-            def expand(self, safeloader, node):
-                key = self.construct_scalar(node)
-                self._data = safeloader._data
-                return self.subkey(key)
-
-            def subkey(self, key):
-                if not self._data:
-                    return ''
-                data = deepcopy(self._data)
-                if key == '&':
-                    return ''
-                for k in key.split(':'):
-                    if not k:
-                        return data
-                    data = data.get(k)
-                    if data is None:
-                        return ''
-                return data
-
-            def construct_mapping(self, safeloader, node):
-                safeloader.flatten_mapping(node)
-                return Odict(safeloader.construct_pairs(node))
-
-        return yaml.load(yaml_string, Loader)
-
-    @staticmethod
-    def dump(self, default_flow_style=True):
-        '''Serialize odict into yaml string'''
-        class Dumper(yaml.SafeDumper):
-            def __init__(self, *args, **kwargs):
-                super(Dumper, self).__init__(*args, **kwargs)
-                self.ignore_aliases = lambda self: True
-                self.add_representer(Odict, lambda self, data:
-                    self.represent_dict(data.items()))
-
-            def increase_indent(self, flow=False, indentless=False):
-                return super(Dumper, self).increase_indent(flow, False)
-
-        stream = StringIO()
-        yaml.dump(self, stream, Dumper, default_flow_style=default_flow_style)
-        return stream.getvalue()[:-1]
 
 
 class Config(Odict):
@@ -225,7 +53,7 @@ class Config(Odict):
 
     def __init__(self, config_data='', args=None, version=None, types=set()):
         '''Initialize config object. Keep its __dict__ clean for easy access'''
-        super(Config, self).__init__()
+        super().__init__()
         if config_data == '' and args is None:
             return
         if version:
