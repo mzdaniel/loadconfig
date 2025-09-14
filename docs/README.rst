@@ -5,8 +5,8 @@ loadconfig
 .. image:: https://readthedocs.org/projects/loadconfig/badge/?version=master
     :target: http://loadconfig.readthedocs.org/en/master
     :alt: [Docs]
-.. image:: https://github.com/mzdaniel/loadconfig/actions/workflows/runtests.yml/badge.svg
-    :target: https://github.com/mzdaniel/loadconfig/actions/workflows/runtests.yml
+.. image:: https://github.com/mzdaniel/loadconfig/actions/workflows/test.yml/badge.svg
+    :target: https://github.com/mzdaniel/loadconfig/actions/workflows/test.yml
     :alt: [Tests]
 
 

@@ -18,8 +18,10 @@ docs:
     @rm -rf build/venv build/.doctrees build/_static build/objects.inv build/.buildinfo build/index.html
 
 build:
-    @just mkenv "build" '"wheel>=0.42"'
+    @just mkenv "build" ""
     pip wheel -w build/wheel .
+    cp build/wheel/loadconfig-*-py3-none-any.whl build/wheel/loadconfig-0.0.0-py3-none-any.whl
+    python -c "from tomllib import load; c=load(open('ChangeLog','rb')); v=next(iter(c)); print(c[v]['notes'])" > build/notes.md
     @rm -rf build/venv build/lib build/bdist.linux-aarch64 loadconfig.egg-info
 
 mkenv name wheels:
@@ -27,4 +29,4 @@ mkenv name wheels:
     @rm -rf build/venv
     echo 'Building {{name}}'
     python -m venv build/venv
-    uv pip install {{wheels}}
+    [ "{{wheels}}" != "" ] && pip install {{wheels}} || true

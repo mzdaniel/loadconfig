@@ -1,0 +1,19 @@
+name: Run Tests
+on: [push, pull_request]
+
+jobs:
+  test:  # name of the job
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      max-parallel: 6
+      matrix:
+        python-version: ['3.11']
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Install workflow dependencies
+      run:  pip install rust-just
+
+    - name: Run tests
+      run:  just test
