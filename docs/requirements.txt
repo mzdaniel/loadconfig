@@ -1,4 +1,0 @@
-PyYAML>=6.0.2
-clg>=3.3
-mkdocs>=1.6.1
-mkdocs-codeinclude-plugin>=0.2.1
