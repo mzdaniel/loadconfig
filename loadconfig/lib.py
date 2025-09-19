@@ -14,10 +14,11 @@ import clg
 from collections import deque
 from contextlib import contextmanager
 from copy import deepcopy
+from io import StringIO
+from itertools import count
 import os
 from os import remove, environ
 from os.path import basename, dirname, abspath, exists, isdir, isfile
-from io import StringIO
 import re
 import shlex
 from shutil import rmtree
@@ -25,6 +26,7 @@ from signal import SIGTERM
 from subprocess import Popen, PIPE
 import sys
 from tempfile import mkdtemp, mkstemp
+from textwrap import dedent
 from types import ModuleType
 import yaml
 
@@ -457,11 +459,12 @@ class Odict(dict):
 
     def _process_args(self, *args, **kwargs):
         if len(args) == 1 and isinstance(args[0], str):
+            yaml_string = dedent(args[0])
             try:
-                pair_list = self.load(args[0])
+                pair_list = self.load(yaml_string)
             except yaml.scanner.ScannerError:
                 # Yaml needs {} on multi-key single-line strings
-                pair_list = self.load('{{{}}}'.format(args[0]))
+                pair_list = self.load(f'{{{yaml_string}}}')
             args = [pair_list] if pair_list else []
         return args
 
@@ -539,6 +542,7 @@ class Odict(dict):
 class Loader(yaml.SafeLoader):
     def __init__(self, yaml_string):
         self._root = ''
+        yaml_string = self.pre_include(yaml_string)
         super().__init__(yaml_string)
         self.add_constructor(MAPPING_TAG, self.odict_mapping)
         self.add_constructor('!env', self.env)
@@ -555,6 +559,18 @@ class Loader(yaml.SafeLoader):
     def read(self, safeloader, node):
         node = self.construct_scalar(node)
         return read_file(node)
+
+    def pre_include(self, yaml_string):
+        '''Replace non-annotated !include with file content'''
+        # Try up to max times to expand include
+        include_max = 100
+        n = count()
+        while (mo:=re.search(r'^(!include ["\']?([\w/.]+)["\']?)\s*$',
+               yaml_string, flags=re.MULTILINE)) and next(n) < include_max:
+            content = read_file(mo.group(2)).rstrip('\n')
+            yaml_string = re.sub(r'(!include ["\']?[\w/.]+["\']?)\s*$',
+                content, yaml_string, flags=re.MULTILINE)
+        return yaml_string
 
     def include(self, safeloader, node):
         node = self.construct_scalar(node)

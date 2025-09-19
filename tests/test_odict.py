@@ -43,6 +43,21 @@ def test_load_set():
     assert Odict(yaml_string) == expected_object, "ODict loads !!set"
 
 
+def test_include_odict_file_quoting():
+    '''Test pre-processing !include '''
+    with tempfile() as fh:
+        fh.write('y: [3, 4]\n')
+        fh.flush()
+        d = Odict(f'''\
+            !include '{fh.name}'
+
+            x:
+              a : 1
+              b : 2
+            ''')
+    assert '{y: [3, 4], x: {a: 1, b: 2}}' == repr(d)
+
+
 def test_unexistent_include_config():
     '''Test yaml !include tag ignore unxexistent file'''
     with tempfile() as fh:

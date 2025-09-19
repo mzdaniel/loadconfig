@@ -1,8 +1,34 @@
-CHANGES
-=======
+["0.1.4"]
+notes = """
+loadconfig 0.1.4 (2025-09-18)
+=============================
 
-0.1.2
------
+* Add pre-processed !include yaml capability and docs
+* Fix #8 (thanks Omry Yadan) using his suggested use example
+* Add test based on Omry's !include example"""
+
+
+["0.1.3"]
+notes = """
+loadconfig 0.1.3 (2025-09-14)
+=============================
+
+* Use regular dicts instead of OrderedDict
+* Simplify Odict class, making yaml Loader and Dumper their own classes
+* Fix #6 (thanks John McGehee) using his suggested odict_mapping name
+* Translate and add John's !!set unittest to pytest
+* Remove import cruft
+* Reorganize code and cleanup
+* Add ReadTheDocs builder config
+* Simplify releasing process using ChangeLog toml file
+* Remove uv dependency for venv
+* Add github actions CD for packaging and releasing"""
+
+
+["0.1.2"]
+notes = """
+loadconfig 0.1.2 (2025-09-09)
+=============================
 
 * Upgrade to python3.11 deprecating all previous versions
 * Upgrade clg, sphinx and switch to sphinx-simplepdf and ruff
@@ -13,23 +39,18 @@ CHANGES
   build speedup
 * Cleanup deprecated cruft (setup.py, requirements.txt, etc)
 * Remove Odict stale code discovered by coverage testing
-* Add github actions CI for testing
+* Add github actions CI for testing"""
 
-
-0.1.1
------
-
+["0.1.1"]
+notes = """
 * release 0.1.1
 * Add library write_file
 * Add namespaces to Config.run
 * Improve library exc and add last and Ret. Add tests and cleanup
 * Improve version parsing
-* dev version update
+* dev version update"""
 
-
-0.1
----
-
+"0.1" = """
 * release 0.1
 * Update clg dependency
 * Simplify package version handling
@@ -41,22 +62,16 @@ CHANGES
   library function
 * Add Config.render functionality expanding Config in a string
 * Add default command clg keyword. Update tests and docs
-* dev version update
+* dev version update"""
 
-
-0.1b1
------
-
+"0.1b1" = """
 * Remove six dependency
 * Simplify API adding version and prog. Update tests and docs
 * Refactor argparse_clg patch to simplify SystemExit interface. Update tests
   and docs
-* Refactor README.rst to make Pypi happy
+* Refactor README.rst to make Pypi happy"""
 
-
-0.0.9
------
-
+"0.0.9" = """
 * release 0.0.9
 * Make README.rst more github compatible.
 * Add yaml file loading capability with new !read tag. Expand docs.
@@ -66,33 +81,21 @@ CHANGES
 * Refactor yaml Config methods. Make Config return empty string on None
 * Remove six dependency when pip installing from sources
 * Improve Pypi classification
-* Get docs version from setup.cfg
+* Get docs version from setup.cfg"""
 
-
-0.0.8
------
-
+"0.0.8" = """
 * release 0.0.8
 * Add yaml !env environment variables to config
 * Significantly improve testing and debugging with pytest. Refactor and add
   new tests using pytest. Add new odict tests. Make key expansion more robust.
   Expand $ keys within -C arguments. Flatten lists on config export. Multiple
-  library improvements
+  library improvements"""
 
+"0.0.7" = """
+* docs: Ensure docs can be built on readthedocs"""
 
-0.0.7
------
+"0.0.6" = """
+* Add attribute setting and deletion with tests"""
 
-* docs: Ensure docs can be built on readthedocs
-
-
-0.0.6
------
-
-* Add attribute setting and deletion with tests
-
-
-0.0.5
------
-
-* loadconfig initial public prerelease
+"0.0.5" = """
+* loadconfig initial public prerelease"""

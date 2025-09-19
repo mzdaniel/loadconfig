@@ -28,14 +28,6 @@ pygments_style = 'sphinx'
 
 extensions = ['sphinx.ext.doctest']
 
-try:
-    import rst2pdf
-    extensions += ['sphinx_simplepdf']
-    simplepdf_vars = {'cover-bg':'#5080b0'}
-except ImportError as e:
-    pass
-
-
 # Use bootstrap theme if available. Assumed readthedocs otherwise
 if 'sphinx_bootstrap_theme' in locals():
     html_theme = 'bootstrap'

@@ -1,0 +1,32 @@
+name: Run deploy
+on: [workflow_dispatch]
+permissions: {}  # Set permissions at the job level
+
+jobs:
+  deploy:  # job name
+    if: github.repository == 'mzdaniel/loadconfig'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        persist-credentials: false
+
+    - name: Install workflow dependencies
+      run:  pip install rust-just
+
+    - name: Run tests
+      run:  just test
+
+    - name: Run build
+      run:  just build
+
+    - name: Publish GitHub Release
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        export VERSION=$(sed -En 's|loadconfig ([0-9.]+) .+|\1|p' build/notes.md)
+        gh release create "$VERSION" -F build/notes.md build/wheel/loadconfig-*.whl

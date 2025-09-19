@@ -6,6 +6,11 @@
 Intermediate tutorial
 =====================
 
+.. note::
+
+   Yaml is highly sensitive of leading whitespaces. Similarly to pyyaml itself,
+   loadconfig dedents its yaml_string input before anything else.
+
 .. _expansion:
 
 Expansion
@@ -79,6 +84,35 @@ This feature allows to expand just a key from a previously included yaml file
     ...     '''
     >>> Config(conf)
     {colors: [iris, teal, coral]}
+
+
+Pre-processed !include
+~~~~~~~~~~~~~~~~~~~~~~
+
+If !include needs to be pre-processed before the resulting yaml string
+is parsed, insert it at the beginning of a line with a newline after the
+file path. In this mode, loadconfig will literally replace the !include
+line with the file content.
+
+For the following example, loadconfig first dedents the conf string as
+usual, then replaces all pre-processed !include lines, and finally passes
+the resulting string to pyyaml. Note that without dedenting birds.yml, this
+example would have been broken.
+
+    >>> from textwrap import dedent
+    >>> content = dedent(open('birds.yml').read())
+    >>> with open('birds.yml', 'w') as fh:
+    ...     _ = fh.write(content)
+    >>>
+    >>> conf = '''\
+    ...     goldfinch:
+    ...       colors:
+    ...         - yellow
+    ...
+    ...     !include birds.yml
+    ... '''
+    >>> Config(conf)
+    {goldfinch: {colors: [yellow]}, hummingbird: {colors: [iris, teal, coral]}}
 
 
 Environment variables
@@ -173,7 +207,7 @@ updating and overriding older data with new values from the sequence::
     export HUMMINGBIRD="ruby myrtle"
 
 
-.. testcleanup::
+.. testcleanup:: *
 
     import os
     os.remove('birds.yml')
