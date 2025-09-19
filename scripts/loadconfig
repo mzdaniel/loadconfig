@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 '''usage: loadconfig [-h] [-v] [-C CONF] [-E STR] [args [args ...]]
 
-loadconfig 0.2.6 generates envvars from multiple sources.
+loadconfig 0.0.0 generates envvars from multiple sources.
 
 positional arguments:
   args                  arguments for configuration
@@ -38,23 +38,14 @@ conf = """\
                 web:  https://loadconfig.readthedocs.org
                 pdf:  https://readthedocs.org/projects/loadconfig/downloads
         options:
-            version:
-                short: v
-                action: version
-                version: $prog $version
-            conf:
-                short: C
-                default: __SUPPRESS__
-                help: Configuration file in yaml format to load
-            str:
-                short: E
-                default: __SUPPRESS__
-                help: 'yaml config string "key: value, .."'
+            version: {short: v, action: version, version: $prog $version}
+            conf: {short: C, default: __SUPPRESS__,
+                   help: Configuration file in yaml format to load}
+            str: {short: E, default: __SUPPRESS__,
+                  help: 'yaml config string "key: value, .."'}
         args:
-            args:
-                nargs: '*'
-                default: __SUPPRESS__
-                help: arguments for configuration"""
+            args: {nargs: '*', default: __SUPPRESS__,
+                   help: arguments for configuration}"""
 
 
 def main(args):

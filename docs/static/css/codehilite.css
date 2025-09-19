@@ -1,0 +1,32 @@
+/* Center title  */
+div.col-md-9 h1:first-of-type {text-align: center; font-size: 60px}
+
+/* sidebar left aligned  */
+body>div.container {margin-left: 0}
+
+/* sidebar increase h3 margin  */
+.bs-sidebar .nav .nav .nav {margin-left: 2em}
+
+/* remove grille from mkdocs theme  */
+body::before {background: none}
+
+
+/* Extra css based on default pygmentize output
+   pygmentize -S default -f html -a .codehilite > styles.css  */
+
+/* Improved codehilite python syntax */
+
+.codehilite .k  {color: #FF7700; font-weight: bold} /* Keyword  (eg: def, pass) */
+.codehilite .kn {color: #FF7700; font-weight: bold} /* Keyword.Namespace  (eg: from, import) */
+.codehilite .nb {color: #900090} /* Name.Builtin  (eg: list) */
+.codehilite .nn {color: #0000F0; font-weight: bold} /* Name.Namespace */
+.codehilite .nc {color: #0000F0; font-weight: bold} /* Name.Class */
+.codehilite .nf {color: #0000F0} /* Name.Function */
+.codehilite .ne {color: #FF0000; font-weight: bold} /* Name.Exception */
+.codehilite .kc {color: #FF7700; font-weight: bold} /* Keyword.Constant  (eg: None) */
+.codehilite .bp {color: #008000} /* Name.Builtin.Pseudo  (eg: self) */
+.codehilite .s1 {color: #00AA00} /* Literal.String.Single */
+.codehilite .s2 {color: #00AA00} /* Literal.String.Double */
+.codehilite .sd {color: #00AA00} /* Literal.String.Doc (eg: ''') */
+.codehilite .o  {color: #C65D09} /* Operator */
+.codehilite .c1 {color: #DD0000; font-style: italic} /* Comment.Single */

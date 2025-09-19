@@ -1,21 +1,17 @@
-.. include:: /defs.irst
-
-=====================
-Basic Config Tutorial
-=====================
+# Basic Config Tutorial
 
 This chapter ilustrates the usage of loadconfig with basic and practical, step
 by step examples. Each one of them is in itself a doctest that was run to build
 the pypi release package for proper documentation and software validation.
 
+---
 
-Inline config
-=============
+
+## Inline config
 
 Lets start with the most simple and practical example:
 
-.. doctest::
-
+    :::python
     >>> from loadconfig import Config
     >>> Config('greeter: Hi there')
     {greeter: Hi there}
@@ -29,6 +25,7 @@ represent its state.
 
 Our config object is in itself a yaml flavored OrderedDict:
 
+    :::python
     >>> c = Config('''
     ...         greeter:
     ...           message: Hi
@@ -50,6 +47,7 @@ fact loadconfig itself needs it for processing its clg special keyword.
 
 Lets now see how our config prints:
 
+    :::python
     >>> print(c)
     greeter:
       message: Hi
@@ -62,6 +60,7 @@ Lets now see how our config prints:
 Not bad. The parsed yaml string and later rendered output generated exactly
 the same input. Let's try now feeding back that pretty Config representation
 
+    :::python
     >>> Config('{greeter: {message: Hi, group: [Jill, Ted, Nancy]}}')
     {greeter: {message: Hi, group: [Jill, Ted, Nancy]}}
 
@@ -70,6 +69,7 @@ Not bad at all! Yaml allowed us to skip all those quotes in literal strings,
 making the code much more cleaner. Just for a second lets consider how we
 would write a similar expression in python:
 
+    :::python
     >>> c = {'greeter':
     ...         {'message': 'Hi',
     ...          'group':   ['Jill', 'Ted', 'Nancy']}}
@@ -80,11 +80,11 @@ are a real source of very subtle bugs. So we are gaining in readability and
 correctness.
 
 
-Idempotence
-===========
+## Idempotence
 
 To summarize, let's highlight another desirable property of Config:
 
+    :::python
     >>> c = Config('greeter: {message: Hi, group: [Jill, Ted, Nancy]}')
     >>> c
     {greeter: {message: Hi, group: [Jill, Ted, Nancy]}}
@@ -95,11 +95,11 @@ In other words our config representation is idempotent. Very useful for having
 a common unique representation of data regardless of what was done to make it.
 
 
-Access interface
-================
+## Access interface
 
 Now, let's check our config access interface:
 
+    :::python
     >>> c['greeter']
     {message: Hi, group: [Jill, Ted, Nancy]}
 
@@ -113,17 +113,18 @@ Now, let's check our config access interface:
 Right there, we avoided two pairs of quotes and two pairs of square brakets!
 We can even intermix the dictionary and the attribute access::
 
+    :::python
     >>> c['greeter'].group
     ['Jill', 'Ted', 'Nancy']
 
 
-Overriding keys
-===============
+## Overriding keys
 
 Overriding keys is a fundamental feature of loadconfig that gives the ability
 to quickly adapt configuration content to the program needs.
 
 
+    :::python
     >>> c.update('place: Yosemite')
     >>> c
     {greeter: {message: Hi, group: [Jill, Ted, Nancy]}, place: Yosemite}
@@ -134,6 +135,7 @@ to quickly adapt configuration content to the program needs.
 
 As with regular code, the latest key defined wins:
 
+    :::python
     >>> conf = '''\
     ...     greeter: {message: Hi, group: [Jill, Ted, Nancy]}
     ...     greeter: {message: Hi, group: [Jill, Ted, Nancy, Steve]}'''
@@ -142,5 +144,7 @@ As with regular code, the latest key defined wins:
 
 
 But what about the DRY (Don't Repeat Yourself) principle? And what about
-descriptive programming? Lets explore some of the best features like include
-and CLG (Command Line Generator) in the :ref:`intermediate tutorial`
+descriptive programming? Let's explore some of the best features like include
+and CLG (Command Line Generator) in the [intermediate tutorial][].
+
+[intermediate tutorial]: intermediate.md

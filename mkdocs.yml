@@ -1,0 +1,34 @@
+site_name: loadconfig
+site_url:  https://loadconfig.readthedocs.org
+repo_url:  https://github.com/mzdaniel/loadconfig
+site_author: 'Daniel Mizyrycki'
+copyright:   '&copy 2015-2025, Daniel Mizyrycki'
+docs_dir:  docs
+site_dir:  build/site
+use_directory_urls: false
+
+nav:
+  - Home:  README.md
+  - Basic: basic.md
+  - Intermediate: intermediate.md
+  - Advanced: advanced.md
+  - Examples: examples.md
+
+theme:
+  name: mkdocs
+  navigation_depth: 3
+  custom_dir: docs/static
+  highlightjs: false
+
+extra_css: [static/css/codehilite.css]
+
+markdown_extensions:
+  admonition: {}
+  attr_list:  {}
+  codehilite: {}
+  toc:        {permalink: '&#xf0c1;'}
+
+plugins:
+  - codeinclude:
+      title_mode: none
+  - search

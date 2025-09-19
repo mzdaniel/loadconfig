@@ -3,7 +3,7 @@ from __future__ import print_function
 __all__ = ['Config', 'Odict', '__version__']
 
 __author__ = 'Daniel Mizyrycki'
-__version__ = '0.1.4'
+__version__ = '0.2.0.dev1'
 
 from itertools import count
 from .lib import (Odict, delregex, dfl, findregex, flatten,
@@ -188,19 +188,18 @@ class Config(Odict):
         or a method from the namespace.
 
         >>> conf = Config("""
-        ...            prog: netapplet.py
+        ...            prog: netapplet
         ...            clg:
         ...                subparsers:
         ...                    install:
         ...                        help: 'run as $prog install | bash'""")
         >>> def install(c):
-        ...     print('echo "Installation shell script lines for {}."'.format(
-        ...         c.prog))
+        ...     print(f'echo "Commands for {c.prog} installation"')
         >>> # Ensure install function is reachable
         >>> __import__(__name__).install = install
         >>> c = Config(conf, args=['', 'install'])
         >>> c.run(__name__)
-        echo "Installation shell script lines for netapplet.py."
+        echo "Commands for netapplet installation"
         '''
         if isinstance(namespace, str):  # rename namespace with its last name
             lname = __import__(namespace.partition('.')[0])

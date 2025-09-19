@@ -39,8 +39,10 @@ script-files = ["scripts/loadconfig"]
 version = {attr = 'loadconfig.__version__'}
 
 [tool.ruff.lint]
-exclude = ["docs/conf.py"]
-ignore = ["E113", "E402", "E741"]
+ignore = ["E402", "E741"]
 
 [tool.pytest.ini_options]
-addopts = "-sv --ignore=docs/conf.py --ignore=tests/fixtures/demoscript.py --doctest-modules --doctest-glob='*.py' --doctest-glob='*rst' --cov=loadconfig --cov=tests --cov-report=term-missing"
+addopts = "-sv --ignore=tests/fixtures/demoscript.py --ruff --doctest-modules --doctest-glob='*.py' --doctest-glob='*.md' --cov=loadconfig --cov=tests --cov-report=term-missing"
+
+[tool.coverage.html]
+directory = "build/coverage"

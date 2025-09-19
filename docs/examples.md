@@ -1,15 +1,9 @@
-.. include:: /defs.irst
+# Full, real application examples
 
-.. _examples:
+---
 
-===============================
-Full, real application examples
-===============================
 
-.. _loadconfig script:
-
-loadconfig as a generic program wrapper
-=======================================
+## loadconfig as a generic program wrapper
 
 In modern unix systems, the sheer amount of options in most of the cli tools is
 plain staggering. Often we have use cases that matter to us, but in order to
@@ -24,17 +18,19 @@ processing, documentation, configuration files, and variables. loadconfig is
 meant to unify the management of these interfaces with simple, descriptive yaml
 strings.
 
-.. literalinclude:: examples/loadconfig
+<!--codeinclude-->
+[loadconfig](../scripts/loadconfig)
+<!--/codeinclude-->
 
 Following loadconfig's philosophy, its script implementation is in itself
-straightforward. All imperative programming aspects are kept to minimum. As we
-can see, all keywords and concepts of our conf python variable were already
-introduced in :ref:`cli interface`. When using a clg key, loadconfig defines
-the $prog attribute using args[0]. This allows to decouple the program name
-from sys.argv[0]. Sometimes, it is nice to get the program version from an
-external source (eg: another module) and feed it into Config. The convenient
-Config version parameter is used in this case. At this point, we are familiar
-with the Config class. c.export is just a Config method that iterates over all
+straightforward. All imperative programming aspects are kept to minimum. As
+we can see, all keywords and concepts of our conf python variable were already
+introduced in [cli interface][]. When using a clg key, loadconfig defines the
+$prog attribute using args[0]. This allows to decouple the program name from
+sys.argv[0]. Sometimes, it is nice to get the program version from an external
+source (eg: another module) and feed it into Config. The convenient Config
+version parameter is used in this case. At this point, we are familiar with
+the Config class. c.export is just a Config method that iterates over all
 keywords defined, making them uppercase, replacing space by underline and
 prepending the word export. Want to take a guess? We will see shortly why.
 Finally, all the actual commands are enclosed in the main function as good
@@ -46,12 +42,11 @@ This seamlessly simple script hides really well its true expressiveness power
 when combined with some shell scripting. Here we go.
 
 
-Sphinx renderer
-===============
+## Sphinx renderer
 
 Lets assume we have an application that renders sphinx html documentation,
 detects changes in the documentation sources in real time and controls a
-browser. There is a wonderful project called `docker`_ that encapsulates
+browser. There is a wonderful project called [docker][] that encapsulates
 incredibly well all the application pieces (libraries, fonts, programs) in a
 single unit called image and offers a neat cli to interact with the
 operating system. Now, there are lots of possibilities to precisely control how
@@ -71,7 +66,9 @@ the variable arguments we care the most. In this case, most of the docker run
 command is setup. The only 'interesting' variable part, is the path of our
 sphinx source documents, in this case /data/rst.
 
-.. literalinclude:: examples/sphinx
+<!--codeinclude-->
+[sphinx](examples/sphinx)
+<!--/codeinclude-->
 
 As this is a full application, there are plenty of details to see. Still,
 with a simple glance, we can see 2 distinctive sections. A config section with
@@ -80,31 +77,30 @@ happens on the CONF variable. The executable section is driven by loadconfig
 script, docker and the shell interpreter.
 
 
-CONF variable
-~~~~~~~~~~~~~
+### CONF variable
 
-* version is a literal string, just as the ones on :doc:`basic`
+* version is a literal string, just as the ones on [basic tutorial][].
 * desktop_args is another literal string with a twist. It contains the shell
   environment variable DISPLAY. The shell will expand it later.
-* docker_args  is also a multiline literal string (separated by \\) with a big
-  twist.
+* docker_args is also a multiline literal string (separated by \\) with a big
+  twist
 
-  docker_args: -d -u admin -v $(realpath $sphinx_dir):/data/sphinx \\
-    $DESKTOP_ARGS reg.csl/sphinx
+    ```
+    docker_args: -d -u admin -v $(realpath $sphinx_dir):/data/sphinx \
+        $DESKTOP_ARGS reg.csl/sphinx
+    ```
 
-    * sphinx_dir is the path we want loadconfig to load as a cli argument.
-        As such, it is declared within clg. loadconfig will expand
-        sphinx_dir after it runs. We saw loadconfig expansion on the
-        :doc:`intermediate`
+* sphinx_dir is the path we want loadconfig to load as a cli argument. As
+  such, it is declared within clg. loadconfig will expand sphinx_dir after it
+  runs. We saw loadconfig expansion on the [intermediate tutorial][]
 
-    * $(realpath ... ):/data/sphinx is a literal for loadconfig. After
-      loadconfig runs the shell will see $(realpath /data/rst):/data/sphinx
-      assuming the default defined in clg and will expand $()
+* $(realpath ... ):/data/sphinx is a literal for loadconfig. After loadconfig
+  runs the shell will see $(realpath /data/rst):/data/sphinx assuming the
+  default defined in clg and will expand $()
 
-    * DESKTOP_ARGS is also a literal for loadconfig. It will be expanded
-      by the shell
+* DESKTOP_ARGS is a literal for loadconfig. It will be expanded by the shell
 
-* clg was covered on :ref:`cli interface` except for  %(default)s with is
+* clg was covered on [cli interface][] except for %(default)s with is
   expanded by clg with /data/rst.
 
 * check_config is a special loadconfig keyword. It makes loadconfig exec the
@@ -113,13 +109,12 @@ CONF variable
   sphinx_dir path
 
 
-Executable section
-~~~~~~~~~~~~~~~~~~
+### Executable section
 
 This is where the 'action' happens.
 
 * set -e makes the shell to stop when a command does not succeed. This is
-  good shell programming practice and loadconfig takes advante of it.
+  good shell programming practice and loadconfig takes advantage of it.
 * ENV=$(loadconfig -E="prog: $(basename $0)" -E="$CONF" "$@") executes
   loadconfig which will interpret our CONF variable and the command line
   arguments. Remember that loadconfig printed export lines with the each key
@@ -146,14 +141,17 @@ The rest of the lines are simple shell commands:
 
 
 Docker is just one (very good) use case example. François Ménabé, the author of
-CLG, shows us how to leverage KVM virtual machines on his `CLG examples`_.
+CLG, shows us how to leverage KVM virtual machines on his [CLG examples][].
 Pretty much all functionality and examples from CLG work unmodified in
-loadconfig, including CLG execute keyword. There is plenty of `CLG`_ and
-`argparse`_ documentation to make the most of the cli.
+loadconfig, including CLG execute keyword. There is plenty of [CLG][] and
+[argparse][] documentation to make the most of the cli.
 
 
-.. _docker: https://www.docker.com
-.. _bash hackers: http://wiki.bash-hackers.org
-.. _CLG examples: https://clg.readthedocs.org/en/latest/examples.html
-.. _CLG: https://clg.readthedocs.org
-.. _argparse: https://docs.python.org/3/library/argparse.html
+[argparse]: https://docs.python.org/3/library/argparse.html
+[bash hackers]: http://wiki.bash-hackers.org
+[basic tutorial]: basic.md
+[CLG examples]: https://clg.readthedocs.org/en/latest/examples.html
+[CLG]: https://clg.readthedocs.org
+[cli interface]: intermediate.md#cli-interface
+[docker]: https://www.docker.com
+[intermediate tutorial]: intermediate.md
