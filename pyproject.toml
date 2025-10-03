@@ -35,6 +35,7 @@ Repository = "https://github.com/loadconfig"
 [tool.setuptools]
 packages = ["loadconfig"]
 script-files = ["scripts/loadconfig"]
+license-files = []
 
 [tool.setuptools.dynamic]
 version = {attr = 'loadconfig.__version__'}
