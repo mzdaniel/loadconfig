@@ -1,3 +1,18 @@
+["0.2.0.dev1"]
+notes = """
+loadconfig 0.2.0.dev1 (2025-10-03)
+==================================
+
+* Add pytest-ruff to simplify lint testing
+* Make testing as easy as `pytest`
+* Simplify documentation using markdown
+* Fully switch to mkdocs for documentation
+* Make docs building as easy as `mkdocs build`
+* Update ReadTheDocs requirements.txt
+* Reorganize docs and cleanup
+* Migrate ReadTheDocs to mkdocs"""
+
+
 ["0.1.4"]
 notes = """
 loadconfig 0.1.4 (2025-09-18)
