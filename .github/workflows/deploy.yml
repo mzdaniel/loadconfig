@@ -16,7 +16,7 @@ jobs:
         persist-credentials: false
 
     - name: Install workflow dependencies
-      run:  pip install rust-just
+      run:  pip install rust-just twine
 
     - name: Run tests
       run:  just test
@@ -28,5 +28,13 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        export VERSION=$(sed -En 's|loadconfig ([0-9.]+) .+|\1|p' build/notes.md)
+        export VERSION=$(sed -En 's|loadconfig ([0-9.dev]+) .+|\1|p' build/notes.md)
         gh release create "$VERSION" -F build/notes.md build/wheel/loadconfig-*.whl
+
+    - name: Publish PyPI Release
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+      run: |
+        export VERSION=$(sed -En 's|loadconfig ([0-9.dev]+) .+|\1|p' build/notes.md)
+        twine upload build/wheel/loadconfig*
