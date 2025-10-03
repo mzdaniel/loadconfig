@@ -30,6 +30,7 @@ jobs:
       run: |
         export VERSION=$(sed -En 's|loadconfig ([0-9.dev]+) .+|\1|p' build/notes.md)
         gh release create "$VERSION" -F build/notes.md build/wheel/loadconfig-*.whl
+        rm build/wheel/loadconfig-0.0.0*.whl
 
     - name: Publish PyPI Release
       env:
