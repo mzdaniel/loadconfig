@@ -1,3 +1,14 @@
+["0.2.0"]
+notes = """
+loadconfig 0.2.0 (2025-10-03)
+=============================
+
+* Add github actions CD for PyPI deployment
+* Add PyPI badge
+* Ensure twine check pass on wheel build
+* Enable deployment of dev releases"""
+
+
 ["0.2.0.dev1"]
 notes = """
 loadconfig 0.2.0.dev1 (2025-10-03)

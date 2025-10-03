@@ -13,9 +13,9 @@ readme = "README.md"
 requires-python = ">= 3.11"
 dependencies = ["clg>=3.3", "PyYAML>=6.0.2"]
 keywords = ["config", "yaml", "clg", "command-line", "argparse"]
-license = "MIT"
-license-files = ["LICENSE"]
+license = {file="LICENSE"}
 classifiers = [
+    "License :: OSI Approved :: MIT License",
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: System Administrators",
