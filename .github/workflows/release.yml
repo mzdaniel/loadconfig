@@ -1,0 +1,56 @@
+name: Release
+on:
+  push:
+    tags:
+    - '[0-9]+.[0-9]+.[0-9]+'
+    - '[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
+permissions: {}  # Set permissions at the job level
+
+jobs:
+  test_prod:
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    strategy: {matrix: {name: ['3.11', '3.12']}}
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v5
+      with: {ref: main, persist-credentials: false}
+    - uses: actions/setup-python@v4
+      with: {python-version: "${{matrix.name}}"}
+
+    - name: Install test dependencies
+      run:  pip install rust-just
+
+    - name: Run tests
+      run:  just test
+
+    - name: Run build
+      run:  just build
+
+  deploy_prod:
+    needs: [test_prod]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+    - uses: actions/checkout@v5
+      with: {ref: main, persist-credentials: false}
+    - uses: actions/setup-python@v4
+      with: {python-version: '3.12'}
+
+    - name: Install deploy dependencies
+      run:  pip install rust-just twine
+
+    - name: Run build
+      run:  just build
+
+    - name: Publish PyPI Release
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{secrets.PYPI_TOKEN}}
+      run: twine upload build/wheel/loadconfig*
+
+    - name: Publish GitHub Release
+      env: {GH_TOKEN: "${{secrets.GITHUB_TOKEN}}"}
+      run: |
+        cp build/wheel/loadconfig-*.whl build/wheel/loadconfig-0.0.0-py3-none-any.whl
+        gh release create ${{github.ref_name}} -F build/notes.md build/wheel/loadconfig-*.whl

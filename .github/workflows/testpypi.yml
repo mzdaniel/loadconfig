@@ -1,0 +1,33 @@
+name: Deploy testpypi
+on: {workflow_dispatch: {branches: [dev]}}
+permissions: {}  # Set permissions at the job level
+
+jobs:
+  deploy:
+    if: github.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+    - uses: actions/checkout@v5
+      with: {ref: 'dev', persist-credentials: false}
+    - uses: actions/setup-python@v4
+      with: {python-version: '3.12'}
+
+    - name: Install test dependencies
+      run:  pip install rust-just
+
+    - name: Run tests
+      run:  just test
+
+    - name: Run build
+      run:  just build
+
+    - name: Install deploy dependencies
+      run:  pip install twine
+
+    - name: Publish PyPI Release
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{secrets.PYPI_TOKEN}}
+      run: |
+        twine upload -r testpypi build/wheel/loadconfig*
