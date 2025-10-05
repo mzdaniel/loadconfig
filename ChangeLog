@@ -1,3 +1,14 @@
+["0.2.1rc1"]
+notes = """
+loadconfig 0.2.1rc1 (2025-10-04)
+================================
+
+* Integrate github actions dev deployment with testpypi
+* Exercise tests for all supported python versions on release
+* Prevent github publishing on dev deployments
+* Workaround setuptools metadata issue"""
+
+
 ["0.2.0"]
 notes = """
 loadconfig 0.2.0 (2025-10-03)

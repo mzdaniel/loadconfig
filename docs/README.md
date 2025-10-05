@@ -1,7 +1,7 @@
 # loadconfig
 
 [![Docs](https://readthedocs.org/projects/loadconfig/badge)](https://loadconfig.readthedocs.org)
-[![Pypi package](https://img.shields.io/pypi/v/loadconfig.svg)](https://pypi.python.org/pypi/loadconfig)
+[![Pypi package](https://img.shields.io/pypi/pyversions/loadconfig.svg)](https://pypi.python.org/pypi/loadconfig)
 [![Tests](https://github.com/mzdaniel/loadconfig/actions/workflows/test.yml/badge.svg)](https://github.com/mzdaniel/loadconfig/actions/workflows/test.yml)
 
 ---

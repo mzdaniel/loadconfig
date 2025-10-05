@@ -21,7 +21,6 @@ build:
     @rm -rf build/wheel
     pip wheel -w build/wheel .
     twine check --strict build/wheel/loadconfig*
-    cp build/wheel/loadconfig-*-py3-none-any.whl build/wheel/loadconfig-0.0.0-py3-none-any.whl
     python -c "from tomllib import load; c=load(open('ChangeLog','rb')); v=next(iter(c)); print(c[v]['notes'])" > build/notes.md
     @rm -rf build/venv build/lib build/bdist.linux-aarch64 build/scripts-3.12 loadconfig.egg-info
 
