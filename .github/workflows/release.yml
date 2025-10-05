@@ -31,6 +31,7 @@ jobs:
     needs: [test_prod]
     runs-on: ubuntu-latest
     environment: production
+    permissions: {id-token: write, contents: write}
     steps:
     - uses: actions/checkout@v5
       with: {ref: main, persist-credentials: false}

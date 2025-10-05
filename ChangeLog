@@ -1,3 +1,11 @@
+["0.2.1rc3"]
+notes = """
+loadconfig 0.2.1rc3 (2025-10-05)
+================================
+
+* Ensure github deployments have proper permissions"""
+
+
 ["0.2.1rc2"]
 notes = """
 loadconfig 0.2.1rc2 (2025-10-05)
