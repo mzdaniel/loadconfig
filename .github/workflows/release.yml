@@ -10,7 +10,7 @@ jobs:
   test_prod:
     if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
-    strategy: {matrix: {name: ['3.11', '3.12']}}
+    strategy: {matrix: {name: ['3.11', '3.12', '3.13', '3.14.0-rc.3']}}
     timeout-minutes: 10
     steps:
     - uses: actions/checkout@v5

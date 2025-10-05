@@ -3,7 +3,7 @@ from __future__ import print_function
 __all__ = ['Config', 'Odict', '__version__']
 
 __author__ = 'Daniel Mizyrycki'
-__version__ = '0.2.1.rc3'
+__version__ = '0.2.1rc4'
 
 from itertools import count
 from .lib import (Odict, delregex, dfl, findregex, flatten,

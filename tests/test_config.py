@@ -16,6 +16,7 @@ addpath(__file__, parent=True)
 from loadconfig import Config, Odict
 from loadconfig.lib import (exc, run, tempdir, tempfile)
 from os.path import basename
+from platform import python_version
 from pytest import fixture
 import re
 from textwrap import dedent
@@ -235,7 +236,9 @@ def test_help(f):
         options:
           -h, --help            show this help message and exit
           -v, --version         show program's version number and exit
-          -e EXTRA_CONFIG, --extra-config EXTRA_CONFIG''')
+        ''')
+    exp = exp + ('  -e EXTRA_CONFIG, --extra-config EXTRA_CONFIG'
+        if python_version() < '3.13' else '  -e, --extra-config EXTRA_CONFIG')
     assert exp == e().args[0]
 
 
